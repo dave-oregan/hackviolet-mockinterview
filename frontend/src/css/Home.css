@@ -45,24 +45,108 @@
 .home-main {
   flex: 1;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 24px 40px;
+}
+
+.welcome-top {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+  margin-bottom: 40px;
+}
+
+.welcome-text {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255,255,255,0.18);
+}
+
+.join-center {
+  flex: 1;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  width: 100%;
 }
 
-.dashboard-message {
-  text-align: center;
-}
-
-.dashboard-message h2 {
-  font-size: 48px;
+.join-button {
+  background: linear-gradient(180deg, #ffffff, #f2f2f2);
+  color: #000;
+  padding: 24px 40px;
+  border-radius: 14px;
+  font-size: 20px;
   font-weight: 700;
-  margin: 0 0 16px 0;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.2);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+  transition: transform 0.12s, box-shadow 0.12s;
 }
 
-.dashboard-message p {
-  font-size: 24px;
-  color: #a1a1a6;
-  margin: 0;
+.join-button:hover { transform: translateY(-4px); }
+
+/* modal styles (SelectMode) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
+
+.modal-card {
+  background: #0f0f10;
+  padding: 28px;
+  border-radius: 12px;
+  width: 360px;
+  max-width: calc(100% - 40px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #a1a1a6;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.modal-title {
+  margin: 6px 0 18px 0;
+  color: #fff;
+  font-size: 18px;
+}
+
+.modal-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-option {
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal-option:hover { background: rgba(255,255,255,0.1); }

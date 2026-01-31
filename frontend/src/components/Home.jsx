@@ -1,14 +1,28 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, logoutUser } from '../functions/login';
+import SelectMode from './SelectMode';
 import '../css/Home.css';
 
 function Home() {
   const navigate = useNavigate();
   const user = getCurrentUser();
+  const [openModal, setOpenModal] = useState(false);
 
   const handleLogout = () => {
     logoutUser();
     navigate('/');
+  };
+
+  const handleJoin = () => {
+    setOpenModal(true);
+  };
+
+  const handleClose = () => setOpenModal(false);
+
+  const handleSelect = (mode) => {
+    console.log('Selected mode:', mode);
+    // Future: route to mode-specific flow
   };
 
   // Redirect to login if not authenticated
@@ -26,10 +40,17 @@ function Home() {
         </button>
       </div>
       <main className="home-main">
-        <div className="dashboard-message">
-          <h2>Welcome, {user.name}!</h2>
-          <p>This is your dashboard</p>
+        <div className="welcome-top">
+          <h2 className="welcome-text">Welcome, &lt;{user.name}&gt;</h2>
         </div>
+
+        <div className="join-center">
+          <button className="join-button" onClick={handleJoin}>
+            Join Meeting
+          </button>
+        </div>
+
+        <SelectMode open={openModal} onClose={handleClose} onSelect={handleSelect} />
       </main>
     </div>
   );
