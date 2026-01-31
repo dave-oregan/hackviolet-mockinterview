@@ -1,22 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
 import { getCurrentUser, logoutUser } from '../functions/login';
+
+// Components
 import SelectMode from './SelectMode';
-import MagicBento from './MagicBento'; 
-import FadeContent from './FadeContent'; // [1] Import FadeContent
-import '../css/Home.css';
+import FadeContent from './FadeContent'; 
 import GlassIcons from './GlassIcon';
+import LightPillar from './LightPillar';
+
+// SVG Icons
 import TelOut from '../svg/telout';
 import Graph from '../svg/graph';
-import Archive from '../svg/archive';
+import ArchiveIcon from '../svg/archive';
+
+// Styles
+import '../css/Home.css';
 
 function Home() {
     const navigate = useNavigate();
     const user = getCurrentUser();
     
     const [openModal, setOpenModal] = useState(false);
-    // Note: We removed showProgress state since we now navigate to a new page
 
     const handleLogout = () => {
         logoutUser();
@@ -33,6 +37,7 @@ function Home() {
         console.log('Selected mode:', mode);
     };
 
+    // Protect the route
     useEffect(() => {
         if (!user) {
             navigate('/login');
@@ -41,6 +46,7 @@ function Home() {
 
     if (!user) return null;
 
+    // Menu Configuration
     const items = [
         { 
             icon: <TelOut />, 
@@ -55,23 +61,41 @@ function Home() {
             click: () => navigate('/progress') 
         },
         { 
-            icon: <Archive />, 
+            icon: <ArchiveIcon />, 
             color: 'indigo', 
             label: 'Archive', 
-            click: () => console.log('Archive clicked') 
+            click: () => navigate('/archive') 
         },
     ];
 
     return (
-        // [2] Wrap the entire container in FadeContent
         <FadeContent blur={true} duration={0.8}>
             <div className="home-container">
-                <div className="home-header">
+                {/* 1. Background Layer - LightPillar with Requested Settings */}
+                <LightPillar
+                    topColor="#5227FF"
+                    bottomColor="#FF9FFC"
+                    intensity={1}
+                    rotationSpeed={0.3}
+                    glowAmount={0.002}
+                    pillarWidth={3}
+                    pillarHeight={0.4}
+                    noiseIntensity={0.5}
+                    pillarRotation={25}
+                    interactive={false}
+                    mixBlendMode="screen"
+                    quality="high"
+                />
+
+                {/* 2. Content Layer - Header */}
+                <header className="home-header">
                     <h1 className="home-logo">Intervue</h1>
                     <button className="logout-button" onClick={handleLogout}>
                         Log out
                     </button>
-                </div>
+                </header>
+
+                {/* 3. Content Layer - Main */}
                 <main className="home-main">
                     <div className="welcome-top">
                         <h2 className="welcome-text">Welcome, {user.name}</h2>
@@ -81,7 +105,7 @@ function Home() {
                         <GlassIcons items={items} className="custom-class" colorful={false} />
                     </div>
 
-                    <br /><br /><br /><br /><br />
+                    <div className="spacer" style={{ height: '15vh' }}></div>
 
                     <SelectMode open={openModal} onClose={handleClose} onSelect={handleSelect} />
                 </main>

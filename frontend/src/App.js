@@ -11,6 +11,7 @@ import Survey from './components/Survey'; // [1] Import the Survey component
 import DotGrid from './components/Dotgrid';
 import SplitText from './components/SplitText';
 import FadeContent from './components/FadeContent';
+import Archive from './components/Archive';
 
 // Helper Imports
 import { getCurrentUser } from './functions/login';
@@ -93,6 +94,9 @@ function App() {
         
         {/* Progress / Bento Grid Page */}
         <Route path="/progress" element={<Progress />} />
+
+        {/* [2] Add Archive Route */}
+        <Route path="/archive" element={<Archive />} />
       </Routes>
     </Router>
   );
