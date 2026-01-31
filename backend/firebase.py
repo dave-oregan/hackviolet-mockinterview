@@ -2,6 +2,7 @@ import os
 import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app, storage
 from dotenv import load_dotenv
+
 import datetime
 from datetime import datetime, timezone
 import uuid
@@ -85,8 +86,6 @@ if __name__ == "__main__":
         "feedback":"Great communication and movement of hands"
     }
     add_interview('liamm24@vt.edu', 'Google', 'Software Engineer', '1', test_report)
-    
-    get_persona_data("google", "behavorial")
     
     
 

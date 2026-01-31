@@ -5,7 +5,7 @@
 from flask import Flask
 import datetime
 from flask import Flask, request, jsonify
-from backend.firebase.firebase import addUser
+from backend.firebase import addUser
 
 from flask_cors import CORS
 
