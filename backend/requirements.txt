@@ -1,0 +1,18 @@
+# --- Web Framework ---
+Flask==3.0.0
+flask-cors==4.0.0
+python-dotenv==1.0.0
+
+# --- AI & LLM ---
+google-generativeai==0.3.2
+elevenlabs==0.2.27
+openai-whisper==20231117
+torch==2.1.0  # Required for Whisper
+
+# --- Computer Vision & Processing ---
+opencv-python-headless==4.8.1.78
+mediapipe==0.10.9
+numpy==1.26.2
+
+# --- Database ---
+firebase-admin==6.4.0
