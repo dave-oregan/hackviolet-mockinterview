@@ -6,7 +6,8 @@ import './App.css';
 // Component Imports
 import Login from './components/Login';
 import Home from './components/Home';
-import Progress from './components/Progress'; // [1] New Import
+import Progress from './components/Progress';
+import Survey from './components/Survey'; // [1] Import the Survey component
 import DotGrid from './components/Dotgrid';
 import SplitText from './components/SplitText';
 import FadeContent from './components/FadeContent';
@@ -78,12 +79,15 @@ function App() {
         <Route 
           path="/login" 
           element={
-            <FadeContent blur={true} duration={0.2}>
+            <FadeContent blur={true} duration={0.5}>
               <Login />
             </FadeContent>
           } 
         />
         
+        {/* New Survey Page Route */}
+        <Route path="/survey" element={<Survey />} />
+
         {/* Home Dashboard */}
         <Route path="/home" element={<Home />} />
         

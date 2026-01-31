@@ -1,0 +1,180 @@
+.survey-container {
+  height: 100vh; /* Fixed height to prevent page scroll */
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #060010;
+  padding: 0; /* Remove padding to maximize space */
+  overflow: hidden; /* Disable scrolling */
+}
+
+.survey-card {
+  background: rgba(33, 36, 44, 0.95);
+  padding: 1.5rem; /* Reduced padding */
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px; /* Slightly narrower */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+  
+  /* Ensure it doesn't get too tall */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.survey-header {
+  text-align: center;
+  margin-bottom: 1rem; /* Tighter margin */
+}
+
+.survey-header h2 {
+  margin: 0;
+  color: white;
+  font-size: 1.4rem; /* Smaller title */
+}
+
+.survey-header p {
+  color: #94a3b8;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.survey-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* Tighter gap between rows */
+}
+
+.form-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-group.half {
+  flex: 1;
+}
+
+label {
+  color: #e2e8f0;
+  font-size: 0.75rem; /* Smaller labels */
+  font-weight: 500;
+  margin-left: 2px;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.4rem 0.6rem; /* Very slim inputs */
+  border-radius: 6px;
+  color: white;
+  outline: none;
+  font-size: 0.85rem;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+input:focus, select:focus {
+  border-color: #61dafb;
+}
+
+/* Companies Pills */
+.companies-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.company-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 0.3rem 0.6rem; /* Compact pills */
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.75rem;
+  flex-grow: 1;
+  text-align: center;
+}
+
+.company-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.company-pill.active {
+  background: rgba(97, 218, 251, 0.2);
+  border-color: #61dafb;
+  color: #61dafb;
+}
+
+/* File Upload */
+.hidden-input {
+  display: none;
+}
+
+.file-upload-label {
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  padding: 0.75rem; /* Reduced padding */
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  box-sizing: border-box;
+}
+
+.file-upload-label:hover {
+  border-color: #61dafb;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.file-name {
+  color: #61dafb;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+/* Submit Button */
+.submit-btn {
+  margin-top: 0.75rem;
+  width: 100%;
+  background: linear-gradient(90deg, #61dafb, #4fa8c5);
+  color: #0f172a;
+  font-weight: 700;
+  padding: 0.6rem; /* Slimmer button */
+  font-size: 0.9rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.2s;
+  box-sizing: border-box;
+}
+
+.submit-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+/* --- Safety for REALLY small screens --- */
+/* If the screen is ridiculously short (like landscape mobile), we allow scrolling within the card only */
+@media (max-height: 600px) {
+  .survey-card {
+    max-height: 95vh;
+    overflow-y: auto;
+    display: block; /* Unset flex centering */
+  }
+}

@@ -7,6 +7,8 @@ import '../css/Login.css';
 function Login() {
   const navigate = useNavigate();
   const [isSignIn, setIsSignIn] = useState(true);
+  
+  // Form States
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -14,6 +16,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Handle Login
   const handleSignInSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -33,6 +36,7 @@ function Login() {
     }
   };
 
+  // Handle Signup
   const handleSignUpSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -45,7 +49,8 @@ function Login() {
     try {
       const result = await signupUser(name, email, password);
       if (result.success) {
-        navigate('/home');
+        // [CHANGE] Redirect new users to the Survey page
+        navigate('/survey');
       } else {
         setError(result.error);
       }
@@ -61,7 +66,6 @@ function Login() {
       <motion.div 
         layout 
         className="login-box login-card"
-        // [1] Much softer spring physics for a "smooth" resize feel
         transition={{ type: 'spring', stiffness: 120, damping: 20 }}
       >
         <div className="toggle-container">
@@ -74,7 +78,6 @@ function Login() {
             aria-pressed={isSignIn}
           >
             Log in
-            {/* [2] Removed the motion.div underline here */}
           </button>
           <button
             className={`toggle-button ${!isSignIn ? 'active' : ''}`}
@@ -85,7 +88,6 @@ function Login() {
             aria-pressed={!isSignIn}
           >
             Sign Up
-            {/* [2] Removed the motion.div underline here */}
           </button>
         </div>
 
@@ -98,7 +100,6 @@ function Login() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              // [3] Slower, eased transition for the content fade
               transition={{ duration: 0.4, ease: "easeInOut" }}
               onSubmit={handleSignInSubmit}
               className="login-form"
@@ -141,7 +142,6 @@ function Login() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              // [3] Same smooth transition for sign up
               transition={{ duration: 0.4, ease: "easeInOut" }}
               onSubmit={handleSignUpSubmit}
               className="login-form"
