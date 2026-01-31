@@ -1,7 +1,5 @@
-# Use a slim Python image
 FROM python:3.11-slim
 
-# Install the updated system dependencies
 RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
@@ -9,13 +7,12 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy requirements from the root
+# This copies from the root (where requirements.txt is)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the backend code
-COPY . .
+# This copies the contents of the /backend folder into /app
+COPY ./backend . 
 
 EXPOSE 5000
-
 CMD ["python", "app.py"]
