@@ -1,12 +1,10 @@
-version: '3.8'
-
 services:
   backend:
     build:
-      context: .
+      context: .  # This allows Docker to see requirements.txt in the root
       dockerfile: backend/Dockerfile
     ports:
-      - "5000:5000"
+      - "5001:5000"  # Change this to 5001 to avoid the Mac AirPlay error
     volumes:
       - ./backend:/app
     env_file:
@@ -22,5 +20,5 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    stdin_open: true # Required for React scripts to run interactively
+    stdin_open: true 
     tty: true
