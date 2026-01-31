@@ -5,6 +5,7 @@ import './App.css';
 import Login from './components/Login';
 import Home from './components/Home';
 import DotGrid from './components/Dotgrid';
+import SplitText from './components/SplitText'; // Import the SplitText component
 import { getCurrentUser } from './functions/login';
 
 function AppContent() {
@@ -34,11 +35,17 @@ function AppContent() {
               returnDuration={1.5}
             />
           </div>
-          <div className="logo-section">
-            <h1 className="logo-text">Intervue</h1>
+          <div className="logo-section" style={{ zIndex: '1' }}>
+            {/* Replaced standard h1 with SplitText for the Intervue title */}
+            <SplitText 
+              text="Intervue" 
+              className="logo-text"
+              delay={100}
+              duration={0.8}
+            />
             <p className="logo-tagline">AI-Powered Interview Coach</p>
           </div>
-          <button className="login-nav-button" onClick={() => navigate('/login')}>
+          <button className="login-nav-button" onClick={() => navigate('/login')} style={{ zIndex: '1' }}>
             Log In
           </button>
         </div>
