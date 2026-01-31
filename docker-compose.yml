@@ -1,34 +1,26 @@
 version: '3.8'
 
 services:
-  # Python Flask Backend
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: interview-backend
     ports:
       - "5000:5000"
     volumes:
       - ./backend:/app
-      - ./shared:/app/shared  # Maps the shared folder for live updates
     env_file:
-      - .env  # Injected keys for Gemini, ElevenLabs, Firebase
-    restart: always
+      - .env
+    environment:
+      - FLASK_ENV=development
 
-  # React TypeScript Frontend
   frontend:
     build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    container_name: interview-frontend
+      context: ./frontend
     ports:
       - "3000:3000"
     volumes:
       - ./frontend:/app
-      - ./shared:/app/shared
-    stdin_open: true  # Keeps React interactive
+      - /app/node_modules
+    stdin_open: true # Required for React scripts to run interactively
     tty: true
-    environment:
-      - CHOKIDAR_USEPOLLING=true # Essential for hot-reload on Windows/Mac
-    restart: always
