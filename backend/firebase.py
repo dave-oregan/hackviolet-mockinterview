@@ -1,8 +1,11 @@
 import os
 import firebase_admin
-from firebase_admin import credentials, firestore, initialize_app
+from firebase_admin import credentials, firestore, initialize_app, storage
 from dotenv import load_dotenv
-import datetime 
+
+import datetime
+from datetime import datetime, timezone
+import uuid
 
 load_dotenv()
 
@@ -72,13 +75,7 @@ if __name__ == "__main__":
     add_user('Liam', 'liamm24@vt.edu', '123','Virginia Tech','Data Science', '20', [])
     
     test_report = {
-        "score":80,
+        "score":"80",
         "feedback":"Great communication and movement of hands"
     }
-    add_interview('liamm24@vt.edu', 'Google', 'int_001', 'Software Engineer', test_report)
-    
-    
-
-
-
-
+    add_interview('liamm24@vt.edu', 'Google', 'Software Engineer', '1', test_report)
