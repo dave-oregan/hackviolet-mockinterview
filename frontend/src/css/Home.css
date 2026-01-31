@@ -1,0 +1,68 @@
+.home-container {
+  min-height: 100vh;
+  background-color: #000000;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.home-logo {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.2);
+}
+
+.logout-button {
+  padding: 10px 20px;
+  background-color: white;
+  border: none;
+  border-radius: 6px;
+  color: #000000;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+}
+
+.logout-button:hover {
+  background-color: #f5f5f7;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(255, 255, 255, 0.15);
+}
+
+.logout-button:active {
+  transform: translateY(0);
+}
+
+.home-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.dashboard-message {
+  text-align: center;
+}
+
+.dashboard-message h2 {
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 0 40px rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-message p {
+  font-size: 24px;
+  color: #a1a1a6;
+  margin: 0;
+}

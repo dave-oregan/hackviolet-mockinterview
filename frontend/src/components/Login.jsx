@@ -1,27 +1,58 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { loginUser, signupUser } from '../functions/login';
 import '../css/Login.css';
 
 function Login() {
+  const navigate = useNavigate();
   const [isSignIn, setIsSignIn] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSignInSubmit = (e) => {
+  const handleSignInSubmit = async (e) => {
     e.preventDefault();
-    console.log('Sign in attempt:', { email, password });
-    // Add authentication logic here
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await loginUser(email, password);
+      if (result.success) {
+        navigate('/home');
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSignUpSubmit = (e) => {
+  const handleSignUpSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      setError('Passwords do not match');
       return;
     }
-    console.log('Sign up attempt:', { name, email, password });
-    // Add registration logic here
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await signupUser(name, email, password);
+      if (result.success) {
+        navigate('/home');
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const boxRef = useRef(null);
@@ -66,6 +97,8 @@ function Login() {
           </button>
         </div>
 
+        {error && <div className="error-message">{error}</div>}
+
         {isSignIn ? (
           <form onSubmit={handleSignInSubmit} className="login-form">
             <h1 className="login-title">Log in</h1>
@@ -94,8 +127,8 @@ function Login() {
               />
             </div>
             <div className="form-actions">
-              <button type="submit" className="login-button">
-                Continue
+              <button type="submit" className="login-button" disabled={loading}>
+                {loading ? 'Signing in...' : 'Continue'}
               </button>
               <a className="link-muted" href="#forgot">
                 Forgot password?
@@ -154,8 +187,8 @@ function Login() {
               />
             </div>
             <div className="form-actions">
-              <button type="submit" className="login-button">
-                Create
+              <button type="submit" className="login-button" disabled={loading}>
+                {loading ? 'Creating account...' : 'Create'}
               </button>
             </div>
           </form>

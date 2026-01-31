@@ -1,11 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import logo from './logo.svg';
 import './App.css';
 import Login from './components/Login';
+import Home from './components/Home';
+import { getCurrentUser } from './functions/login';
 
 function AppContent() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      navigate('/home');
+    }
+  }, [navigate]);
 
   return (
     <div className="App">
@@ -32,6 +41,7 @@ function App() {
       <Routes>
         <Route path="/" element={<AppContent />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/home" element={<Home />} />
       </Routes>
     </Router>
   );
