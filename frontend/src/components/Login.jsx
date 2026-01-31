@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { loginUser, signupUser } from '../functions/login';
 import '../css/Login.css';
 
@@ -55,145 +56,150 @@ function Login() {
     }
   };
 
-  const boxRef = useRef(null);
-
-  useEffect(() => {
-    // adjust height to current content to enable smooth transitions
-    const el = boxRef.current;
-    if (!el) return;
-    // allow browser to compute layout then set explicit height
-    const resize = () => {
-      // reset height to auto to get natural scrollHeight, then set to that value
-      el.style.height = 'auto';
-      const h = el.scrollHeight;
-      el.style.height = h + 'px';
-    };
-
-    // run on next frame to ensure DOM updated
-    requestAnimationFrame(resize);
-
-    // also update on window resize
-    window.addEventListener('resize', resize);
-    return () => window.removeEventListener('resize', resize);
-  }, [isSignIn, name, email, password, confirmPassword]);
-
   return (
     <div className="login-container">
-      <div ref={boxRef} className="login-box login-card">
+      <motion.div 
+        layout 
+        className="login-box login-card"
+        // [1] Much softer spring physics for a "smooth" resize feel
+        transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+      >
         <div className="toggle-container">
           <button
             className={`toggle-button ${isSignIn ? 'active' : ''}`}
-            onClick={() => setIsSignIn(true)}
+            onClick={() => {
+              setIsSignIn(true);
+              setError('');
+            }}
             aria-pressed={isSignIn}
           >
             Log in
+            {/* [2] Removed the motion.div underline here */}
           </button>
           <button
             className={`toggle-button ${!isSignIn ? 'active' : ''}`}
-            onClick={() => setIsSignIn(false)}
+            onClick={() => {
+              setIsSignIn(false);
+              setError('');
+            }}
             aria-pressed={!isSignIn}
           >
             Sign Up
+            {/* [2] Removed the motion.div underline here */}
           </button>
         </div>
 
         {error && <div className="error-message">{error}</div>}
 
-        {isSignIn ? (
-          <form onSubmit={handleSignInSubmit} className="login-form">
-            <h1 className="login-title">Log in</h1>
-            <div className="form-group">
-              <label htmlFor="signin-email">Email</label>
-              <input
-                id="signin-email"
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="signin-password">Password</label>
-              <input
-                id="signin-password"
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-              />
-            </div>
-            <div className="form-actions">
-              <button type="submit" className="login-button" disabled={loading}>
-                {loading ? 'Signing in...' : 'Continue'}
-              </button>
-              <a className="link-muted" href="#forgot">
-                Forgot password?
-              </a>
-            </div>
-          </form>
-        ) : (
-          <form onSubmit={handleSignUpSubmit} className="login-form">
-            <h1 className="login-title">Create Your Account</h1>
-            <div className="form-group">
-              <label htmlFor="signup-name">Full Name</label>
-              <input
-                id="signup-name"
-                type="text"
-                placeholder="Full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                autoComplete="name"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="signup-email">Email</label>
-              <input
-                id="signup-email"
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="signup-password">Password</label>
-              <input
-                id="signup-password"
-                type="password"
-                placeholder="Create a password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="signup-confirm">Confirm Password</label>
-              <input
-                id="signup-confirm"
-                type="password"
-                placeholder="Confirm password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-              />
-            </div>
-            <div className="form-actions">
-              <button type="submit" className="login-button" disabled={loading}>
-                {loading ? 'Creating account...' : 'Create'}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
+        <AnimatePresence mode="wait">
+          {isSignIn ? (
+            <motion.form
+              key="signin"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              // [3] Slower, eased transition for the content fade
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              onSubmit={handleSignInSubmit}
+              className="login-form"
+            >
+              <h1 className="login-title">Log in</h1>
+              <div className="form-group">
+                <label htmlFor="signin-email">Email</label>
+                <input
+                  id="signin-email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="signin-password">Password</label>
+                <input
+                  id="signin-password"
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-actions">
+                <button type="submit" className="login-button" disabled={loading}>
+                  {loading ? 'Signing in...' : 'Continue'}
+                </button>
+                <a className="link-muted" href="#forgot">
+                  Forgot password?
+                </a>
+              </div>
+            </motion.form>
+          ) : (
+            <motion.form
+              key="signup"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              // [3] Same smooth transition for sign up
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              onSubmit={handleSignUpSubmit}
+              className="login-form"
+            >
+              <h1 className="login-title">Create Your Account</h1>
+              <div className="form-group">
+                <label htmlFor="signup-name">Full Name</label>
+                <input
+                  id="signup-name"
+                  type="text"
+                  placeholder="Full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="signup-email">Email</label>
+                <input
+                  id="signup-email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="signup-password">Password</label>
+                <input
+                  id="signup-password"
+                  type="password"
+                  placeholder="Create a password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="signup-confirm">Confirm Password</label>
+                <input
+                  id="signup-confirm"
+                  type="password"
+                  placeholder="Confirm password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-actions">
+                <button type="submit" className="login-button" disabled={loading}>
+                  {loading ? 'Creating account...' : 'Create'}
+                </button>
+              </div>
+            </motion.form>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

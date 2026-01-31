@@ -180,6 +180,44 @@
   .login-title { font-size: 18px; }
 }
 
+.login-box {
+  width: 100%;
+  /* Increase max-width to give the form more space */
+  max-width: 480px; 
+  
+  /* Other existing styles... */
+  overflow: hidden;
+  position: relative;
+  background-color: rgba(33, 36, 44, 0.95); /* Example background */
+  padding: 2rem;
+  border-radius: 12px;
+}
+
+/* Container for the toggle buttons */
+.toggle-container {
+  display: flex;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.toggle-button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  position: relative;
+}
+
+/* The animated sliding underline */
+.active-underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #ffffff; /* Or your theme color */
+}
 /* Dark Mode - Uncomment to use light mode instead
 @media (prefers-color-scheme: light) {
   .login-container { background: #f6f6f7; }

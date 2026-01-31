@@ -5,7 +5,8 @@ import './App.css';
 import Login from './components/Login';
 import Home from './components/Home';
 import DotGrid from './components/Dotgrid';
-import SplitText from './components/SplitText'; // Import the SplitText component
+import SplitText from './components/SplitText';
+import FadeContent from './components/FadeContent';
 import { getCurrentUser } from './functions/login';
 
 function AppContent() {
@@ -36,7 +37,6 @@ function AppContent() {
             />
           </div>
           <div className="logo-section" style={{ zIndex: '1' }}>
-            {/* Replaced standard h1 with SplitText for the Intervue title */}
             <SplitText 
               text="Intervue" 
               className="logo-text"
@@ -61,7 +61,14 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<AppContent />} />
-        <Route path="/login" element={<Login />} />
+        <Route 
+          path="/login" 
+          element={
+            <FadeContent blur={true} duration={0.5}>
+              <Login />
+            </FadeContent>
+          } 
+        />
         <Route path="/home" element={<Home />} />
       </Routes>
     </Router>
