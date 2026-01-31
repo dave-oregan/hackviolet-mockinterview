@@ -12,6 +12,7 @@ import DotGrid from './components/Dotgrid';
 import SplitText from './components/SplitText';
 import FadeContent from './components/FadeContent';
 import Archive from './components/Archive';
+import InterviewBehavioral from './components/Interview-Behavioral';
 
 // Helper Imports
 import { getCurrentUser } from './functions/login';
@@ -97,6 +98,8 @@ function App() {
 
         {/* [2] Add Archive Route */}
         <Route path="/archive" element={<Archive />} />
+        {/* Interview Screen 1 */}
+        <Route path="/interview-behavioral" element={<InterviewBehavioral />} />
       </Routes>
     </Router>
   );
