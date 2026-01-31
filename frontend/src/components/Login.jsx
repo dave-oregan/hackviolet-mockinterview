@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import '../css/Login.css';
 
 function Login() {
@@ -24,36 +24,61 @@ function Login() {
     // Add registration logic here
   };
 
+  const boxRef = useRef(null);
+
+  useEffect(() => {
+    // adjust height to current content to enable smooth transitions
+    const el = boxRef.current;
+    if (!el) return;
+    // allow browser to compute layout then set explicit height
+    const resize = () => {
+      // reset height to auto to get natural scrollHeight, then set to that value
+      el.style.height = 'auto';
+      const h = el.scrollHeight;
+      el.style.height = h + 'px';
+    };
+
+    // run on next frame to ensure DOM updated
+    requestAnimationFrame(resize);
+
+    // also update on window resize
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, [isSignIn, name, email, password, confirmPassword]);
+
   return (
     <div className="login-container">
-      <div className="login-box">
+      <div ref={boxRef} className="login-box login-card">
         <div className="toggle-container">
           <button
             className={`toggle-button ${isSignIn ? 'active' : ''}`}
             onClick={() => setIsSignIn(true)}
+            aria-pressed={isSignIn}
           >
             Sign In
           </button>
           <button
             className={`toggle-button ${!isSignIn ? 'active' : ''}`}
             onClick={() => setIsSignIn(false)}
+            aria-pressed={!isSignIn}
           >
             Sign Up
           </button>
         </div>
 
         {isSignIn ? (
-          <form onSubmit={handleSignInSubmit}>
-            <h1>Sign In</h1>
+          <form onSubmit={handleSignInSubmit} className="login-form">
+            <h1 className="login-title">Sign In</h1>
             <div className="form-group">
               <label htmlFor="signin-email">Email</label>
               <input
                 id="signin-email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
               />
             </div>
             <div className="form-group">
@@ -61,28 +86,35 @@ function Login() {
               <input
                 id="signin-password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
               />
             </div>
-            <button type="submit" className="login-button">
-              Sign In
-            </button>
+            <div className="form-actions">
+              <button type="submit" className="login-button">
+                Continue
+              </button>
+              <a className="link-muted" href="#forgot">
+                Forgot password?
+              </a>
+            </div>
           </form>
         ) : (
-          <form onSubmit={handleSignUpSubmit}>
-            <h1>Sign Up</h1>
+          <form onSubmit={handleSignUpSubmit} className="login-form">
+            <h1 className="login-title">Create Your Account</h1>
             <div className="form-group">
               <label htmlFor="signup-name">Full Name</label>
               <input
                 id="signup-name"
                 type="text"
-                placeholder="Enter your full name"
+                placeholder="Full name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                autoComplete="name"
               />
             </div>
             <div className="form-group">
@@ -90,10 +122,11 @@ function Login() {
               <input
                 id="signup-email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
               />
             </div>
             <div className="form-group">
@@ -101,10 +134,11 @@ function Login() {
               <input
                 id="signup-password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="Create a password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="new-password"
               />
             </div>
             <div className="form-group">
@@ -112,15 +146,18 @@ function Login() {
               <input
                 id="signup-confirm"
                 type="password"
-                placeholder="Confirm your password"
+                placeholder="Confirm password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                autoComplete="new-password"
               />
             </div>
-            <button type="submit" className="login-button">
-              Sign Up
-            </button>
+            <div className="form-actions">
+              <button type="submit" className="login-button">
+                Create
+              </button>
+            </div>
           </form>
         )}
       </div>
