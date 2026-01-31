@@ -55,7 +55,7 @@ function Login() {
             onClick={() => setIsSignIn(true)}
             aria-pressed={isSignIn}
           >
-            Sign In
+            Log in
           </button>
           <button
             className={`toggle-button ${!isSignIn ? 'active' : ''}`}
@@ -68,7 +68,7 @@ function Login() {
 
         {isSignIn ? (
           <form onSubmit={handleSignInSubmit} className="login-form">
-            <h1 className="login-title">Sign In</h1>
+            <h1 className="login-title">Log in</h1>
             <div className="form-group">
               <label htmlFor="signin-email">Email</label>
               <input

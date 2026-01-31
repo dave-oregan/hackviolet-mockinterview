@@ -12,25 +12,15 @@ function AppContent() {
       <header className="App-header">
         <div className="header-content">
           <div className="logo-section">
-            <img src={logo} className="App-logo" alt="logo" />
-            <p>
-              Edit <code>src/App.js</code> and save to reload.
-            </p>
+            <h1 className="logo-text">Intervue</h1>
+            <p className="logo-tagline">AI-Powered Interview Coach</p>
           </div>
           <button className="login-nav-button" onClick={() => navigate('/login')}>
-            Sign In
+            Log In
           </button>
         </div>
       </header>
       <main className="App-main">
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
       </main>
     </div>
   );
