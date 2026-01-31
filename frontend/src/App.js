@@ -1,14 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import logo from './logo.svg';
 import './App.css';
+
+// Component Imports
 import Login from './components/Login';
 import Home from './components/Home';
+import Progress from './components/Progress'; // [1] New Import
 import DotGrid from './components/Dotgrid';
 import SplitText from './components/SplitText';
 import FadeContent from './components/FadeContent';
+
+// Helper Imports
 import { getCurrentUser } from './functions/login';
 
+// --- Landing Page Component ---
 function AppContent() {
   const navigate = useNavigate();
 
@@ -23,6 +29,7 @@ function AppContent() {
     <div className="App">
       <header className="App-header">
         <div className="header-content">
+          {/* Background Animation */}
           <div className="background-dots" style={{ width: '100%', height: '100vh', position: 'absolute', zIndex: '0' }}>
             <DotGrid
               dotSize={5}
@@ -36,6 +43,8 @@ function AppContent() {
               returnDuration={1.5}
             />
           </div>
+
+          {/* Foreground Content */}
           <div className="logo-section" style={{ zIndex: '1' }}>
             <SplitText 
               text="Intervue" 
@@ -45,6 +54,7 @@ function AppContent() {
             />
             <p className="logo-tagline">AI-Powered Interview Coach</p>
           </div>
+          
           <button className="login-nav-button" onClick={() => navigate('/login')} style={{ zIndex: '1' }}>
             Log In
           </button>
@@ -56,20 +66,29 @@ function AppContent() {
   );
 }
 
+// --- Main App Component (Routes) ---
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Landing Page */}
         <Route path="/" element={<AppContent />} />
+        
+        {/* Login Page with Fade Transition */}
         <Route 
           path="/login" 
           element={
-            <FadeContent blur={true} duration={0.5}>
+            <FadeContent blur={true} duration={0.2}>
               <Login />
             </FadeContent>
           } 
         />
+        
+        {/* Home Dashboard */}
         <Route path="/home" element={<Home />} />
+        
+        {/* Progress / Bento Grid Page */}
+        <Route path="/progress" element={<Progress />} />
       </Routes>
     </Router>
   );

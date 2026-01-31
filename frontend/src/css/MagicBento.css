@@ -1,0 +1,236 @@
+:root {
+  --hue: 27;
+  --sat: 69%;
+  --white: hsl(0, 0%, 100%);
+  --purple-primary: rgba(132, 0, 255, 1);
+  --purple-glow: rgba(132, 0, 255, 0.3);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --background-dark: rgba(6, 0, 16, 0.6);
+  --glass-header-bg: rgba(6, 0, 16, 0.8);
+}
+
+/* --- Main Layout --- */
+.progress-page-container {
+  height: 100vh; /* Force full viewport height */
+  width: 100vw;
+  background-color: #060010;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent scrolling */
+  margin: 0;
+  padding: 0;
+}
+
+/* --- Apple-Style Glass Header --- */
+.glass-header {
+  flex-shrink: 0; /* Prevent header from shrinking */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 2rem; /* Reduced padding */
+  background: rgba(6, 0, 16, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.back-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.2rem;
+}
+
+.back-button:hover {
+  background: white;
+  color: black;
+  transform: scale(1.05);
+}
+
+.page-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: -0.01em;
+}
+
+/* --- The Grid --- */
+.card-grid {
+  display: grid;
+  gap: 0.75rem; /* [FIX 1] Much tighter gap */
+  padding: 1rem 2rem; /* Reduced padding */
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  height: calc(100vh - 70px); /* Fill remaining space minus header */
+  /* Center the content vertically */
+  align-content: center; 
+}
+
+/* --- The Cards --- */
+.magic-bento-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  /* [FIX 2] Smaller base height */
+  min-height: 140px; 
+  padding: 1.25rem;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--background-dark);
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  --glow-x: 50%;
+  --glow-y: 50%;
+  --glow-intensity: 0;
+  --glow-radius: 300px;
+}
+
+.magic-bento-card:hover {
+  transform: translateY(-4px) scale(1.005);
+  border-color: rgba(255, 255, 255, 0.2);
+  z-index: 10;
+}
+
+.magic-bento-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.magic-bento-card__label {
+  font-size: 0.65rem; /* Smaller text */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+
+.magic-bento-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  position: relative;
+  z-index: 2;
+}
+
+.magic-bento-card__title {
+  font-size: 1.25rem; /* Slightly smaller title */
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0;
+  background: linear-gradient(to bottom right, #fff, #ccc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.magic-bento-card__description {
+  font-size: 0.85rem; /* Smaller description */
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+  max-width: 95%;
+}
+
+/* --- Responsive Layouts --- */
+
+/* Mobile: Single column, scrolling allowed */
+@media (max-width: 767px) {
+  .progress-page-container {
+    height: auto;
+    overflow-y: auto;
+  }
+  .card-grid {
+    height: auto;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Tablet: 2 Columns */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .progress-page-container {
+    height: auto;
+    overflow-y: auto;
+  }
+  .card-grid {
+    height: auto;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop: 4 Columns Complex Layout (NO SCROLL) */
+@media (min-width: 1200px) {
+  .card-grid {
+    grid-template-columns: repeat(4, 1fr);
+    /* [FIX 3] Fixed row height to ensure fit */
+    grid-template-rows: repeat(3, 180px); 
+    gap: 1rem;
+  }
+
+  /* Big central Feature Card (2x2) */
+  .magic-bento-card:nth-child(1) {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  
+  /* Tall Card (1x2) */
+  .magic-bento-card:nth-child(2) {
+    grid-column: span 1;
+    grid-row: span 2;
+  }
+
+  /* Wide Card (2x1) */
+  .magic-bento-card:nth-child(6) {
+    grid-column: span 2;
+  }
+}
+
+/* --- Glow & Particle Effects --- */
+.magic-bento-card--border-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  background: radial-gradient(
+    var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(132, 0, 255, 0.2) 50%,
+    transparent 70%
+  );
+  border-radius: inherit;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 1;
+}
+
+.global-spotlight {
+  mix-blend-mode: plus-lighter;
+}
