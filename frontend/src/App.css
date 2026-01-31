@@ -30,10 +30,11 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  z-index: 2;
 }
 
 .logo-text {
-  font-size: 72px;
+  font-size: 128px;
   font-weight: 700;
   margin: 0;
   color: white;
@@ -63,6 +64,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+  z-index: 2;
 }
 
 .login-nav-button:hover {
