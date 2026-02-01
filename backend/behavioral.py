@@ -7,10 +7,16 @@ import uuid
 from pathlib import Path
 
 # Configuration for the Gemini API
-genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
 
 class MockInterviewCore:
     def __init__(self, user_email, company_name, interview_level, interview_type):
+        api_key = os.getenv('GOOGLE_API_KEY')
+        if not api_key:
+            raise ValueError("GOOGLE_API_KEY not found in environment variables")
+        
+        genai.configure(api_key=api_key)
+        
+        print('gemini configured')
         self.company_name = company_name
         self.interview_level = interview_level
         self.interview_type = interview_type
@@ -24,7 +30,7 @@ class MockInterviewCore:
         
         # 2. Setup Gemini 3 Models
         self.interviewer_model = genai.GenerativeModel(
-            model_name='gemini-3-pro-preview', # The adaptive strategist
+            model_name='gemini-3-flash-preview', # The adaptive strategist
             system_instruction=self._build_system_prompt(persona_prompt)
         )
         self.feedback_model = genai.GenerativeModel(
@@ -108,18 +114,59 @@ class MockInterviewCore:
             generation_config={"response_mime_type": "application/json"}
         )
         return json.loads(response.text.strip())        
-def process_turn(self, answer, question):
-    "Takes the user answer, generates feedback, generates question, returns question"
-    feedback_json = self.generate_feedback(question, answer)
-    feedback_data = json.loads(feedback_json)
+    def process_turn(self, answer, question):
+        "Takes the user answer, generates feedback, generates question, returns question"
+        feedback_json = self.generate_feedback(question, answer)
+        feedback_data = json.loads(feedback_json)
     
-    self.mini_report.append({
+        self.mini_report.append({
             "turn": len(self.mini_report) + 1,
             "question": question,
             "answer": answer,
             "feedback": feedback_data
         })
         
-    next_question = self.get_question(feedback_data)
+        next_question = self.get_question(feedback_data)
+        return next_question
+    def generate_final_synthesis(self, audio_report, video_report):
+        """
+        Takes the structured JSON from both audio and video analysis 
+        and generates the final executive master report.
+        """
     
-    return next_question
+        synthesis_prompt = f"""
+        You are a Senior Executive Recruiter. You have just received two technical audit reports 
+        on a candidate's performance: one for Audio/Speech and one for Video/Body Language.
+
+        ### INPUT DATA:
+    
+        AUDIO_ANALYSIS:
+        {json.dumps(audio_report, indent=2)}
+
+        VIDEO_ANALYSIS:
+        {json.dumps(video_report, indent=2)}
+
+        ### YOUR TASK:
+        1. Synthesize these reports into one master "overall_analysis".
+        2. Calculate a final_score (0-100) based on an average of both inputs, weighted for overall impact.
+        3. Highlight contradictions (e.g., if audio sounds confident but video shows high fidgeting).
+        4. EVALUATE: 
+        - Identify 2-3 specific "top_strengths" where they excelled.
+        - Identify 2-3 "improvement_priorities" where they struggled or showed "flags".
+
+        Return ONLY a JSON object in this exact structure:
+        {{
+      "overall_analysis": {{
+          "final_score": int,
+          "company": "string",
+          "summary": "string",
+          "top_strengths": ["string", "string"],
+          "improvement_priorities": ["string", "string"]
+        }},
+        }}
+        """
+        response = self.chat_session.model.generate_content(
+            synthesis_prompt,
+            generation_config={"response_mime_type": "application/json"}
+            )    
+        return json.loads(response.text.strip())

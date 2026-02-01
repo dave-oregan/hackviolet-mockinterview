@@ -55,7 +55,7 @@ Return the result in this exact JSON structure:
   }
 }"""
   model = genai.GenerativeModel(
-    model_name="gemini-3-pro-preview", 
+    model_name="gemini-3-flash-preview", 
     system_instruction=prompt, 
     generation_config={"response_mime_type": "application/json"})
   print("\nAnalyzing video...")

@@ -7,7 +7,11 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 
+load_dotenv()
+
 from behavioral import MockInterviewCore
+from video_analysis import analyze_interview_video
+
 from elevenlabs import generate, set_api_key
 import whisper
 
@@ -15,7 +19,6 @@ import whisper
 # Setup
 # -----------------------
 
-load_dotenv()
 
 app = Flask(__name__)
 
@@ -24,7 +27,7 @@ CORS(
     resources={r"/api/*": {"origins": ["http://localhost:3000"]}},
 )
 
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+#GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
 set_api_key(ELEVENLABS_API_KEY)
@@ -69,6 +72,7 @@ def process_audio():
 
         # --- Interview logic ---
         next_q = current_interview.process_turn(user_text, last_q)
+        print(f"Next question {next_q}")
 
         # --- ElevenLabs TTS ---
         audio_bytes = generate(   # Generate text
@@ -136,7 +140,40 @@ def reset_interview():
 
     return jsonify({"greeting": greeting})
 
+@app.route("/api/finalize", methods=["POST"])
+def finalize_interview():
+    try:
+        # 1. Get the video file from frontend
+        video_file = request.files.get("video")
+        if not video_file:
+            return jsonify({"error": "No video recording found"}), 400
 
+        # 2. Save it to a temp file for Gemini to process
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+            video_file.save(tmp.name)
+            temp_video_path = tmp.name
+            
+        print('starting final analysis')
+        # 3. Trigger Audio Analysis (using the history inside current_interview)
+        audio_report = current_interview.generate_audio_feedback()
+
+        # 4. Trigger Video Analysis (using your separate function)
+        video_report = analyze_interview_video(temp_video_path)
+        # 5. Final Synthesis: Tell MockInterviewCore to merge them
+        final_master_report = current_interview.generate_final_synthesis(
+            audio_report, 
+            video_report
+        )
+        print(final_master_report)
+
+        # 6. Clean up the disk
+        os.remove(temp_video_path)
+
+        return jsonify(final_master_report)
+
+    except Exception as e:
+        print("❌ FINALIZATION ERROR:", str(e), flush=True)
+        return jsonify({"error": str(e)}), 500
 # -----------------------
 # Run
 # -----------------------
