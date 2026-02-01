@@ -75,9 +75,14 @@ def get_persona_data(company_name, interview_type):
         doc = doc_ref.get()     
         data = doc.to_dict()   
         
-        print(data)
+        persona_prompt = (data[interview_type]['persona_prompt'])
+        additional_info = (data[interview_type]['additional_info'])
+        return persona_prompt, additional_info
 
-
+def get_user_info(user_email):
+    data = db.collection("accounts").document(user_email).get().to_dict() 
+    return data
+    
 if __name__ == "__main__":
     add_user('Liam', 'liamm24@vt.edu', '123','Virginia Tech','Data Science', '20', [])
     
@@ -86,6 +91,9 @@ if __name__ == "__main__":
         "feedback":"Great communication and movement of hands"
     }
     add_interview('liamm24@vt.edu', 'Google', 'Software Engineer', '1', test_report)
+    get_persona_data('google', 'behavioral')
+    
+    get_past_reports('liamm24@vt.edu')
     
     
 
