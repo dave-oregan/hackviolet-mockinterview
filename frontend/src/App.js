@@ -14,7 +14,6 @@ import DotGrid from './components/Dotgrid';
 import SplitText from './components/SplitText';
 import FadeContent from './components/FadeContent';
 import { getCurrentUser } from './functions/login';
-
 function AppContent() {
   const navigate = useNavigate();
 
