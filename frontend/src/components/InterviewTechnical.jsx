@@ -25,6 +25,7 @@ function solution(nums, target) {
   const [output, setOutput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInterviewStarted, setIsInterviewStarted] = useState(false);
 
   const toggleRecording = () => {
     if (isLoading) return;
@@ -151,16 +152,6 @@ Output: [0,1]
 
           {/* Bottom Split Area */}
           <div className="bottom-row">
-            {/* Mini Menu */}
-            <div className="mini-menu">
-              <button
-                className={`mic-button ${isRecording ? 'active' : ''}`}
-                onClick={toggleRecording}
-                disabled={isLoading}
-              >
-                {isRecording ? <Micw size={18} /> : <Mic size={18} />}
-              </button>
-            </div>
 
             {/* Testcases */}
             <div className="testcase-panel">
@@ -191,6 +182,13 @@ Expected Output:
         <video ref={videoRef} autoPlay playsInline muted />
         <div className="cam-label">You</div>
       </div>
+      <button
+  className={`floating-mic ${isRecording ? 'active' : ''}`}
+                onClick={toggleRecording}
+                disabled={isLoading}
+>
+  {isRecording ? <Micw /> : <Mic />}
+</button>
     </div>
   );
 }

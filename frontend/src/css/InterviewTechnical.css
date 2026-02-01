@@ -315,3 +315,57 @@
   color: #94a3b8;
   padding: 8px 12px;
 }
+
+.floating-mic {
+  position: fixed;
+  bottom: 32px;
+  left: 32px;              /* ⬅️ bottom-left */
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: none;
+  background: #ffffff;
+  color: white;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.6),
+    0 0 0 0 rgba(239, 68, 68, 0.4);
+
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  z-index: 2147483647;     /* 🔥 above EVERYTHING */
+  pointer-events: auto;
+}
+
+.floating-mic:hover {
+  transform: scale(1.08);
+}
+
+.floating-mic.active {
+  background: #ef4444;
+  animation: floatingPulse 1.8s infinite;
+}
+
+/* Pulse when recording */
+@keyframes floatingPulse {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(239, 68, 68, 0.5),
+      0 10px 25px rgba(0, 0, 0, 0.6);
+  }
+  70% {
+    box-shadow:
+      0 0 0 20px rgba(239, 68, 68, 0),
+      0 10px 25px rgba(0, 0, 0, 0.6);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(239, 68, 68, 0),
+      0 10px 25px rgba(0,  0, 0, 0.6);
+  }
+}
