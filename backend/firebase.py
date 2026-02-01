@@ -15,7 +15,7 @@ if not firebase_admin._apps:
     cred = credentials.Certificate({
         "project_id": os.getenv("FB_PROJECT_ID"),
         "client_email": os.getenv("FB_CLIENT_EMAIL"),
-        "private_key": os.getenv("FB_PRIVATE_KEY"),
+        "private_key": os.getenv("FB_PRIVATE_KEY").replace("\\n", "\n"),
         "type": "service_account",
         "token_uri": os.getenv("FB_TOKEN_URI"),
     })
@@ -98,6 +98,20 @@ if __name__ == "__main__":
     
     
 
+import firebase_admin  # <--- ADD THIS LINE
+from firebase_admin import credentials, firestore, initialize_app
+from dotenv import load_dotenv
 
+load_dotenv()
 
+# This checks if the app is already initialized
+if not firebase_admin._apps:
+    cred = credentials.Certificate({
+        "project_id": os.getenv("FB_PROJECT_ID"),
+        "client_email": os.getenv("FB_CLIENT_EMAIL"),
+        "private_key": os.getenv("FB_PRIVATE_KEY").replace('\\n', '\n'),
+        "type": "service_account",
+    })
+    initialize_app(cred)
 
+db = firestore.client()
