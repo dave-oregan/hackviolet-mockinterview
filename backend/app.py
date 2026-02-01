@@ -5,7 +5,7 @@ import tempfile
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-from behavioral import run_test_loop
+from behavioral import MockInterviewCore, run_loop
 
 # --- UPDATED: New Google SDK ---
 from google import genai
@@ -25,14 +25,8 @@ CORS(app)  # Allow React frontend to access this API
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
-if not GOOGLE_API_KEY:
-    print("❌ WARNING: GOOGLE_API_KEY not found in .env", flush=True)
-if not ELEVENLABS_API_KEY:
-    print("❌ WARNING: ELEVENLABS_API_KEY not found in .env", flush=True)
-
 # 3. Initialize APIs
-# --- UPDATED: New Client Initialization ---
-client = genai.Client(api_key=GOOGLE_API_KEY)
+# Set up whisper client
 set_api_key(ELEVENLABS_API_KEY)
 
 # 4. Load Whisper Model
@@ -42,92 +36,40 @@ try:
     print("✅ Whisper model loaded successfully!", flush=True)
 except Exception as e:
     print(f"❌ Error loading Whisper: {e}", flush=True)
-    print("Make sure FFmpeg is installed and added to your PATH.", flush=True)
 
-# 5. Define Persona
-GOLDMAN_SACHS_PERSONA = """
-You are "Marcus," a Senior Vice President in Technology at Goldman Sachs. 
-Your goal is to conduct a technical interview for a Software Engineering Intern candidate.
-
-Tone: Intellectual, rigorous, and professional. You do not make small talk.
-Style: Concise. Keep your responses under 2-3 sentences to keep the conversation flowing naturally.
-Focus: Java, Object-Oriented Design, and Scalability.
-
-Start by asking the candidate to introduce themselves.
-"""
-
-# --- UPDATED: Chat Session Management ---
-# The new SDK creates chats via the client. 
-# We initialize a global session here.
-def create_chat_session():
-    return client.chats.create(
-        model="gemini-2.0-flash", # Updated to faster/newer model
-        config=types.GenerateContentConfig(
-            system_instruction=GOLDMAN_SACHS_PERSONA,
-            temperature=0.7
-        )
-    )
-
-chat_session = create_chat_session()
+current_interview =  MockInterviewCore('liamm24@vt.edu',company_name="google", 
+        interview_level="Medium",
+        interview_type="behavioral")
+sessions = {}
 
 
 # --- ROUTES ---
 
 @app.route('/api/process-audio', methods=['POST'])
 def process_audio():
-    try:
-        # Step A: Validate Input
-        if 'audio' not in request.files:
-            return jsonify({"error": "No audio file provided"}), 400
-            
-        audio_file = request.files['audio']
-        
-        # Step B: Save Temp File for Whisper
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_audio:
-            audio_file.save(temp_audio.name)
-            temp_path = temp_audio.name
+   # A. Get the stuff React sent
+    audio_file = request.files['audio']
+    last_q = request.form.get('question') # 'Question being asked'
 
-        # Step C: Transcribe with Whisper
-        print("🎤 Transcribing audio...", flush=True) # Added flush=True
-        result = whisper_model.transcribe(temp_path)
-        user_text = result["text"]
-        
-        # This is the line that was missing output before:
-        print(f"🗣️ User said: {user_text}", flush=True) 
+    # B. Whisper: Speech -> Text
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp:
+        audio_file.save(tmp.name)
+        user_text = whisper_model.transcribe(tmp.name)["text"]
+    os.remove(tmp.name)
 
-        # Cleanup temp file
-        os.remove(temp_path)
+    # C. Logic: Process the answer and get the NEXT question
+    # This does the heavy lifting: Feedback + Gemini
+    next_q = current_interview.process_turn(user_text, last_q)
 
-        if not user_text.strip():
-            return jsonify({"error": "No speech detected"}), 400
+    # D. ElevenLabs: Text -> Speech
+    audio_bytes = generate(text=next_q, voice="4e32WqNVWRquDa1OcRYZ")
+    audio_64 = base64.b64encode(audio_bytes).decode('utf-8')
 
-        # Step D: Get AI Reply (Text) using New SDK
-        # The new SDK uses .send_message just like the old one, but strictly text-to-text here
-        response = chat_session.send_message(user_text)
-        ai_text = response.text
-        
-        print(f"🤖 Marcus replied: {ai_text}", flush=True)
-
-        # Step E: Generate AI Audio (ElevenLabs)
-        audio_bytes = generate(
-            text=ai_text,
-            voice="4e32WqNVWRquDa1OcRYZ", 
-            model="eleven_monolingual_v1"
-        )
-        
-        audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
-
-        return jsonify({
-            "user_transcription": user_text,
-            "ai_response": ai_text,
-            "audio": audio_base64
-        })
-
-    except Exception as e:
-        print(f"❌ Error processing audio: {e}", flush=True)
-        return jsonify({"error": str(e)}), 500
-
-
+    # E. Send it back to the UI
+    return jsonify({
+        "ai_response": next_q,
+        "audio": audio_64
+    })
 @app.route('/api/chat', methods=['POST'])
 def chat_text_only():
     data = request.json
