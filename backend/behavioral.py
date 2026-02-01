@@ -2,6 +2,7 @@ import google.generativeai as genai
 import json
 import os
 from firebase import get_persona_data, get_user_info
+import uuid
 
 # Configuration for the Gemini API
 genai.configure(api_key="YOUR_GEMINI_API_KEY")
@@ -98,25 +99,83 @@ class MockInterviewCore:
         current_feedback = None
 
         while is_active:
-            # 1. Pro Model generates adaptive question
+            # 1. AI generates question
             question = self.get_question(last_feedback=current_feedback)
-            if "Ends" in question: break
+            if "Ends" in question:
+                break
 
-            # 2. Get user answer
+            # 2. User provides answer (simulated or real)
             user_ans = self.get_response()
 
-            # 3. Flash Model generates tactical feedback
+            # 3. Tactical Turn Analysis (Flash Model)
             turn_feedback_json = self.generate_feedback(question, user_ans)
             
-            # 4. Save to report
+            # 4. Log to internal report
             self.mini_report.append({
                 "question_asked": question,
                 "user_response": user_ans,
                 "feedback": json.loads(turn_feedback_json)
             })
 
-            # 5. Cycle feedback back to the Pro model for the next turn
             current_feedback = turn_feedback_json
+
+        # --- AFTER THE LOOP ENDS ---
+        print("\nInterview Concluded. Generating Final Audio Report...")
+        
+        # This now contains ONLY the 'audio' object structure
+        final_report_object = self.generate_overall_feedback()
+
+        # Save to Firebase history using the function in firebase.py
+        from firebase import add_interview
+        
+        # add_interview(
+        #     user_email=self.user_email,
+        #     company_name=self.company_name,
+        #     role_targetted="Software Engineer",
+        #     interview_id=str(uuid.uuid4()),
+        #     report=final_report_object # Gemini output matches your 'report' schema
+        # )
+
+        return final_report_object
+    def generate_overall_feedback(self):
+        """
+        Synthesizes the entire session into the final report JSON.
+        Focuses exclusively on audio-specific feedback as requested.
+        """
+        # This prompt tells the model to look at the entire chat history
+        final_prompt = """
+        The interview is over. Based on the entire conversation history:
+        1. Evaluate the candidate's audio-based responses.
+        2. Assign an 'audio_score' (0-100).
+        3. Provide 'overall_feedback' (3-4 sentences).
+        4. List 'exact_details' for questions that needed improvement.
+
+        Return ONLY a JSON object with this exact structure:
+        {
+        "audio": {
+            "audio_score": int,
+            "feedback": {
+            "overall_feedback": "string",
+            "exact_details": [
+                {
+                "question": "string",
+                "response": "string",
+                "improvement": "string"
+                }
+            ]
+            }
+        }
+        }
+        """
+
+        # We use the stateful session so it remembers all turns
+        response = self.chat_session.send_message(
+            final_prompt,
+            generation_config={"response_mime_type": "application/json"}
+        )
+        
+        # Return the dictionary directly so it can be passed to Firebase
+        return json.loads(response.text.strip())
 
 # import google.generativeai as genai
 # import json
