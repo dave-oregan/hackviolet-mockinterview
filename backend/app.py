@@ -1,49 +1,192 @@
-# ==============================
-# app.py (Flask backend)
-# ==============================
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-from flask import Flask
-import datetime
+import base64
+import tempfile
 from flask import Flask, request, jsonify
-from backend.firebase import addUser
-
 from flask_cors import CORS
-<<<<<<< HEAD
 from dotenv import load_dotenv
-from behavioral import run_test_loop
 
-# --- UPDATED: New Google SDK ---
-from google import genai
-from google.genai import types
+load_dotenv()
 
-# Keep existing ElevenLabs imports
+from behavioral import MockInterviewCore
+from video_analysis import analyze_interview_video
+
 from elevenlabs import generate, set_api_key
 import whisper
+current_interview = None
 
-# 1. Load Environment Variables
-load_dotenv()
-=======
->>>>>>> parent of 1775e5e (THIS WORKS BRO)
+# -----------------------
+# Setup
+# -----------------------
 
-# Initializing flask app
+
 app = Flask(__name__)
-CORS(app)
 
-# Route for seeing a data
-@app.route('/add_user', methods=['POST'])
-def add_user():
-    # Call addUser function in firebase.py
-    return 1
+CORS(
+    app,
+    resources={r"/api/*": {"origins": ["http://localhost:3000"]}},
+)
+#GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
+set_api_key(ELEVENLABS_API_KEY)
+
+print("⏳ Loading Whisper model...", flush=True)
+whisper_model = whisper.load_model("base")
+print("✅ Whisper loaded", flush=True)
+
+# -----------------------
+# Routes
+# -----------------------
+@app.route("/api/reset", methods=["POST"])
+def start():
+    global current_interview
+    data = request.json
+    user_uuid = data.get("uuid")
+    print(f"This is your submission {user_uuid}")
+
+    current_interview = MockInterviewCore(
+        uuid = user_uuid,
+        user_email="liamm24@vt.edu",
+        company_name="google",
+        interview_level="Medium",
+        interview_type="behavioral"
+    )
+
+# Opener is always this. 
+    name = current_interview.personal_info.get('name', 'Candidate')
+    first_q = f"Hi {name}, thanks for joining us today. To start, can you tell me a bit about your background and what interests you about {current_interview.company_name}?"
+# Generate audio    
+    try:
+        audio_bytes = generate(
+            text=first_q,
+            voice="4e32WqNVWRquDa1OcRYZ",
+            model="eleven_monolingual_v1"
+        )
+        audio_64 = base64.b64encode(audio_bytes).decode("utf-8")
+    except Exception as e:
+        print(f"ElevenLabs Error: {e}")
+        audio_64 = ""
+
+    return jsonify({
+        "ai_response": first_q,
+        "audio": audio_64
+    })
     
-# Running app
-if __name__ == '__main__':
-<<<<<<< HEAD
-    # Run on port 5001
-    app.run(host='0.0.0.0', port=5001, debug=True)
-=======
-    app.run(debug=True)
-    
-    
-    # run app.py
->>>>>>> parent of 1775e5e (THIS WORKS BRO)
+@app.route("/api/process-audio", methods=["POST"])
+def process_audio():
+    try:
+        # --- Get inputs ---
+        audio_file = request.files.get("audio")
+        last_q = request.form.get("question", "")
+
+        if not audio_file:
+            return jsonify({"error": "No audio received"}), 400
+
+        # --- Save audio temporarily ---
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as tmp:
+            audio_file.save(tmp.name)
+            tmp_path = tmp.name
+
+        # --- Whisper STT ---
+        result = whisper_model.transcribe(tmp_path)
+        user_text = result["text"].strip()
+        os.remove(tmp_path)
+
+        print("🗣️ User said:", user_text, flush=True)
+        print("❓ Last question:", last_q, flush=True)
+
+        # --- Interview logic ---
+        next_q = current_interview.process_turn(user_text, last_q)
+        print(f"Next question {next_q}")
+
+        # --- ElevenLabs TTS ---
+        audio_bytes = generate(   # Generate text
+            text=next_q,
+            voice="4e32WqNVWRquDa1OcRYZ",
+            model="eleven_monolingual_v1"
+        )
+
+        audio_64 = base64.b64encode(audio_bytes).decode("utf-8")
+
+        # Send next question audio 
+        return jsonify({
+            "user_transcription": user_text,
+            "ai_response": next_q,
+            "audio": audio_64
+        })
+
+    except Exception as e:
+        print("❌ ERROR:", str(e), flush=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/chat", methods=["POST"])
+def chat_text_only():
+    try:
+        data = request.json
+        user_message = data.get("message")
+
+        if not user_message:
+            return jsonify({"error": "No message"}), 400
+
+        ai_text = current_interview.process_turn(user_message, "")
+
+        audio_bytes = generate(
+            text=ai_text,
+            voice="4e32WqNVWRquDa1OcRYZ",
+            model="eleven_monolingual_v1"
+        )
+
+        audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
+
+        return jsonify({
+            "reply": ai_text,
+            "audio": audio_base64
+        })
+
+    except Exception as e:
+        print("❌ ERROR:", str(e), flush=True)
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/finalize", methods=["POST"])
+def finalize_interview():
+    try:
+        # 1. Get the video file from frontend
+        video_file = request.files.get("video")  # This is your state. its a blob file
+        if not video_file:
+            return jsonify({"error": "No video recording found"}), 400
+
+        # 2. Save it to a temp file for Gemini to process
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+            video_file.save(tmp.name)
+            temp_video_path = tmp.name
+            
+        print('starting final analysis')
+        # 3. Trigger Audio Analysis (using the history inside current_interview)
+        audio_report = current_interview.generate_audio_feedback()
+
+        # 4. Trigger Video Analysis (using your separate function)
+        video_report = analyze_interview_video(temp_video_path)
+        # 5. Final Synthesis: Tell MockInterviewCore to merge them
+        final_master_report = current_interview.generate_final_synthesis(
+            audio_report, 
+            video_report
+        )
+        print(final_master_report)
+
+        # 6. Clean up the disk
+        os.remove(temp_video_path)
+
+        return jsonify(final_master_report)
+
+    except Exception as e:
+        print("❌ FINALIZATION ERROR:", str(e), flush=True)
+        return jsonify({"error": str(e)}), 500
+# -----------------------
+# Run
+# -----------------------
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=3001, debug=True)
