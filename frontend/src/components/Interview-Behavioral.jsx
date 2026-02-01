@@ -97,7 +97,7 @@ function InterviewBehavioral() {
     formData.append('audio', audioBlob, 'input.webm');
 
     try {
-      const response = await fetch('http://localhost:5000/api/process-audio', {
+      const response = await fetch('http://localhost:5001/api/process-audio', {
         method: 'POST',
         body: formData,
       });
@@ -123,7 +123,7 @@ function InterviewBehavioral() {
     setMessages(prev => [...prev, { role: 'user', text: userText }]);
 
     try {
-      const response = await fetch('http://localhost:5000/api/chat', {
+      const response = await fetch('http://localhost:5001/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userText }),
@@ -163,7 +163,7 @@ function InterviewBehavioral() {
 
       <header className="interview-header">
          <button className="interview-exit" onClick={() => navigate('/')}>Exit</button>
-         <span className="timer">Mock Interview: company loading...</span>
+         <span className="timer">Mock Interview: {localStorage.getItem("company-key")}</span>
          <button className="interview-settings">End Meeting</button>
       </header>
 
@@ -202,17 +202,6 @@ function InterviewBehavioral() {
         >
           {isRecording ? (<Micw />) : (<Mic />)}
         </button>
-
-        {/* The corrected input wrapper */}
-        <form className="input-wrapper" onSubmit={handleTextSubmit}>
-          <input 
-            className="chat-input" 
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={isRecording ? "Listening..." : "Click the Button To Start Talking..."} 
-            disabled={isLoading || isRecording}
-          />
-        </form>
         
       </footer>
     </div>

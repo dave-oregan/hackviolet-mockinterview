@@ -36,6 +36,8 @@ const CompanySelection = ({ onClose, onSelect }) => {
   const handleCompanySelect = (companyName) => {
     setSelection((prev) => ({ ...prev, company: companyName }));
     setStep(STEPS.TYPE);
+    let capName = companyName.charAt(0).toUpperCase() + companyName.slice(1);
+    localStorage.setItem("company-key", capName)
   };
 
   const handleTypeSelect = (type) => {
