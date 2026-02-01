@@ -56,10 +56,8 @@ function App() {
         <Route path="/progress" element={<Progress />} />
         <Route path="/archive" element={<Archive />} />
         
-        {/* [2] The Route for your Behavioral Interview */}
+        {/* The Route for the Interview */}
         <Route path="/interview-behavioral" element={<InterviewBehavioral />} />
-        
-        <Route path="/interview/behavioral" element={<InterviewBehavioral />} />
         <Route path="/interview/technical" element={<InterviewTechnical />} />
       </Routes>
     </Router>
