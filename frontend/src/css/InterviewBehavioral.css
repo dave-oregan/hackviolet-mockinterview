@@ -144,7 +144,7 @@
     height: 60px;
     border-radius: 50%;
     border: none;
-    background: #334155;
+    /* background: #334155; */
     color: white;
     cursor: pointer;
     display: flex;
@@ -156,7 +156,7 @@
 }
 
 .mic-button:hover {
-    background: #475569;
+    /* background: #d6d7da; */
     transform: scale(1.05);
 }
 

@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/InterviewBehavioral.css';
 
+import Mic from '../svg/mic';
+import Micw from '../svg/micw';
+
 function InterviewBehavioral() {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
@@ -197,7 +200,7 @@ function InterviewBehavioral() {
           onClick={toggleRecording} 
           disabled={isLoading}
         >
-          {isRecording ? '🛑' : '🎤'}
+          {isRecording ? (<Micw />) : (<Mic />)}
         </button>
 
         {/* The corrected input wrapper */}
