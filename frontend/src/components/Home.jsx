@@ -36,7 +36,7 @@ function Home() {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         setUser({
-          uid: firebaseUser.uid,
+          uid: localStorage.getItem('uid'),
           email: firebaseUser.email,
           name: localStorage.getItem('name'), // replace with Firestore later
         });

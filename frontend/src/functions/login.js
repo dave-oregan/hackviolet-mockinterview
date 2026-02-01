@@ -14,11 +14,16 @@ export const loginUser = async (email, password) => {
       password
     );
     
-    const uid = userCredential.user;
+    const uid = userCredential.user.uid;
 
     const userdoc = await getDoc(doc(FIREBASE_DB, "accounts", uid));
+    const userData = userdoc.data();
 
-    localStorage.setItem("name", userdoc.name);
+    localStorage.setItem("name", userData.fullName);
+    localStorage.setItem("uid", uid)
+
+    console.log(localStorage.getItem(userData.fullName))
+    console.log(localStorage.getItem("uid"))
 
     return { success: true };
   } catch (error) {
