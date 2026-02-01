@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, logoutUser } from '../functions/login';
+import { AnimatePresence } from 'framer-motion';
 
 // Components
 import SelectMode from './SelectMode';
+import CompanySelection from './CompanySelection'; 
 import FadeContent from './FadeContent'; 
 import GlassIcons from './GlassIcon';
 import LightPillar from './LightPillar';
@@ -20,24 +22,58 @@ function Home() {
     const navigate = useNavigate();
     const user = getCurrentUser();
     
-    const [openModal, setOpenModal] = useState(false);
+    // State for the company selection overlay
+    const [showCompanySelect, setShowCompanySelect] = useState(false);
+    
+    // Legacy modal state (can be kept for other features or removed if unused)
+    const [openModal, setOpenModal] = useState(false); 
 
     const handleLogout = () => {
         logoutUser();
         navigate('/');
     };
 
+    // Triggered when clicking "New Interview"
     const handleJoin = () => {
-        setOpenModal(true);
+        setShowCompanySelect(true);
     };
 
-    const handleClose = () => setOpenModal(false);
+    // Triggered when the user finishes the Company -> Type -> Difficulty flow
+    const handleCompanySelected = (finalData) => {
+        console.log("Selection Complete:", finalData);
+        
+        setShowCompanySelect(false);
+
+        // Navigate based on the selected Interview Type
+        if (finalData.type === 'Behavioral') {
+            navigate('/interview-behavioral', { 
+                state: { 
+                    company: finalData.company,
+                    difficulty: finalData.difficulty 
+                } 
+            });
+        } else if (finalData.type === 'Technical') {
+            navigate('/interview/technical', { 
+                state: { 
+                    company: finalData.company,
+                    difficulty: finalData.difficulty 
+                } 
+            });
+        } else {
+            console.warn("Unknown interview type selected");
+        }
+    };
+
+    const handleClose = () => {
+        setOpenModal(false);
+        setShowCompanySelect(false);
+    };
 
     const handleSelect = (mode) => {
         console.log('Selected mode:', mode);
     };
 
-    // Protect the route
+    // Protect Route
     useEffect(() => {
         if (!user) {
             navigate('/login');
@@ -46,7 +82,7 @@ function Home() {
 
     if (!user) return null;
 
-    // Menu Configuration
+    // Menu Items
     const items = [
         { 
             icon: <TelOut />, 
@@ -71,19 +107,19 @@ function Home() {
     return (
         <FadeContent blur={true} duration={0.8}>
             <div className="home-container">
-                {/* 1. Background Layer - LightPillar with Requested Settings */}
-                <LightPillar
-                    topColor="#5227FF"
-                    bottomColor="#FF9FFC"
-                    intensity={1}
-                    rotationSpeed={0.3}
-                    glowAmount={0.002}
-                    pillarWidth={3}
-                    pillarHeight={0.4}
-                    noiseIntensity={0.5}
-                    pillarRotation={25}
-                    interactive={false}
-                    mixBlendMode="screen"
+                {/* 1. Background Layer */}
+                <LightPillar 
+                    topColor="#5227FF" 
+                    bottomColor="#FF9FFC" 
+                    intensity={1} 
+                    rotationSpeed={0.3} 
+                    glowAmount={0.002} 
+                    pillarWidth={3} 
+                    pillarHeight={0.4} 
+                    noiseIntensity={0.5} 
+                    pillarRotation={25} 
+                    interactive={false} 
+                    mixBlendMode="screen" 
                     quality="high"
                 />
 
@@ -105,10 +141,22 @@ function Home() {
                         <GlassIcons items={items} className="custom-class" colorful={false} />
                     </div>
 
+                    {/* Spacer for visual balance */}
                     <div className="spacer" style={{ height: '15vh' }}></div>
-
-                    <SelectMode open={openModal} onClose={handleClose} onSelect={handleSelect} />
                 </main>
+
+                {/* 4. Overlays */}
+                <AnimatePresence>
+                    {showCompanySelect && (
+                        <CompanySelection 
+                            onClose={() => setShowCompanySelect(false)} 
+                            onSelect={handleCompanySelected} 
+                        />
+                    )}
+                </AnimatePresence>
+
+                {/* Legacy Modal (Hidden unless openModal is used) */}
+                <SelectMode open={openModal} onClose={handleClose} onSelect={handleSelect} />
             </div>
         </FadeContent>
     );
