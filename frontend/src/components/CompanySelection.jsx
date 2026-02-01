@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import GradualBlur from './GradualBlur';
 import '../css/CompanySelection.css';
 
 // Asset Imports
@@ -80,9 +79,9 @@ const CompanySelection = ({ onClose, onSelect }) => {
             </motion.div>
           ))}
           {/* Spacer to allow scrolling past the blur */}
-          <div style={{ height: '180px', flexShrink: 0 }}></div>
+          <div style={{ height: '25px', flexShrink: 0 }}></div>
         </div>
-        <GradualBlur target="parent" position="bottom" height="8rem" strength={2} divCount={6} curve="bezier" exponential opacity={1} />
+        
       </section>
 
       {/* General Interview Tab */}
