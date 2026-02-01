@@ -1,92 +1,216 @@
 import google.generativeai as genai
 import json
+import os
+from firebase import get_persona_data, get_user_info
 
-# Replace with your actual API key
+# Configuration for the Gemini API
 genai.configure(api_key="YOUR_GEMINI_API_KEY")
 
-class BehavioralInterview:
-    def __init__(self):
-        # Initializing the array to store JSON-style data
+class MockInterviewCore:
+    def __init__(self, user_email, company_name, interview_level, interview_type):
         self.mini_report = []
+        self.company_name = company_name
+        self.interview_level = interview_level
+        self.interview_type = interview_type
         
-        # Setting up the two models
-        self.interviewer_model = genai.GenerativeModel('gemini-1.5-pro')  # The "Thinker"
-        self.feedback_model = genai.GenerativeModel('gemini-1.5-flash')    # The "Speedster"
+        # 1. Fetch Data from Database
+        persona_prompt, additional_info = get_persona_data(company_name, interview_type)
+        user_data = get_user_info(user_email)
+        self.personal_info = user_data['personal_info']
+        self.user_resume = self.personal_info['resume']
         
-        # Start a chat session for the interviewer to maintain context/history
+        # 2. Set up the Gemini 3 Brains
+        # Question Generator: The Strategist (Gemini 3 Pro)
+        self.interviewer_model = genai.GenerativeModel(
+            model_name='gemini-3-pro-preview',
+            system_instruction=self._build_interviewer_system_prompt(persona_prompt)
+        )
+        
+        # Feedback Brain: The Tactical Coach (Gemini 3 Flash)
+        self.feedback_model = genai.GenerativeModel(
+            model_name='gemini-3-flash-preview',
+            system_instruction=self._build_feedback_system_prompt()
+        )
+        
+        # Start stateful session for the Interviewer
         self.chat_session = self.interviewer_model.start_chat(history=[])
 
-    def get_question(self, previous_feedback=None):
+    def _build_interviewer_system_prompt(self, persona_prompt):
+        return f"""
+        ### ROLE
+        {persona_prompt}
+
+        ### INTERVIEW CONTEXT
+        - **Company:** {self.company_name}
+        - **Level:** {self.interview_level}
+        - **Candidate:** {self.personal_info['name']}, {self.personal_info['major']} at {self.personal_info['school']}
+        - **Resume:** {self.user_resume}
+
+        ### OPERATIONAL CORE: ADAPTATION
+        Analyze the 'Tactical Analysis' from your internal evaluator for every turn. 
+        If a 'Weakness' is flagged, your next question MUST drill into that specific gap.
+        Maintain your persona tone strictly.
+
+        ### TERMINATION
+        If the session logic dictates the end (based on {self.interview_level}), output exactly: "Ends".
         """
-        Acts as the interviewer. Uses the Pro model to generate a 
-        thoughtful, adaptive question based on previous feedback.
+
+    def _build_feedback_system_prompt(self):
+        return """
+        ### ROLE
+        Tactical Evaluator. Analyze the user response for STAR method compliance and technical depth.
+        
+        ### OUTPUT FORMAT
+        Return JSON ONLY:
+        {
+          "star_score": { "S": 1-5, "T": 1-5, "A": 1-5, "R": 1-5 },
+          "identified_weakness": "Description of the gap",
+          "suggested_drill_down": "Recommended follow-up topic"
+        }
         """
-        if previous_feedback:
-            # Empty prompt as requested, but passing feedback for adaptation
-            prompt = f"" 
-            response = self.chat_session.send_message(prompt)
+
+    def get_question(self, last_feedback=None):
+        """Generates adaptive question using the 3 Pro model."""
+        if last_feedback:
+            prompt = f"INTERNAL ANALYSIS: {last_feedback}\n\nAsk the next adaptive follow-up."
         else:
-            # Initial question call
-            prompt = f""
-            response = self.chat_session.send_message(prompt)
+            prompt = "Introduce yourself and ask the first question based on my resume."
             
+        response = self.chat_session.send_message(prompt)
+        return response.text.strip()
+
+    def generate_feedback(self, question_asked, user_response):
+        """Tactical analysis using the 3 Flash model."""
+        prompt = f"Question: {question_asked}\nResponse: {user_response}"
+        
+        response = self.feedback_model.generate_content(
+            prompt,
+            generation_config={"response_mime_type": "application/json"}
+        )
         return response.text.strip()
 
     def get_response(self):
-        """
-        Placeholder for the user's transcribed audio response.
-        """
-        # This will be replaced by your audio_analysis.py logic later
+        # Link this to your audio_analysis.py later
         return "User's transcribed response string goes here."
 
-    def generate_feedback(self, question_asked, user_response):
-        """
-        Uses the Flash model to give quick feedback on the specific interaction.
-        """
-        # Empty prompt as requested
-        prompt = f""
-        response = self.feedback_model.generate_content(prompt)
-        
-        return response.text.strip()
-
     def run_interview(self):
-        """
-        The main loop that controls the interview flow.
-        """
         is_active = True
         current_feedback = None
 
         while is_active:
-            # 1. Get the question (Interviewer turn)
-            question = self.get_question(previous_feedback=current_feedback)
-            
-            # Check for the stop condition
-            if "Ends" in question:
-                print("Interview session concluded.")
-                is_active = False
-                break
+            # 1. Pro Model generates adaptive question
+            question = self.get_question(last_feedback=current_feedback)
+            if "Ends" in question: break
 
-            # 2. Get the user's answer (User turn)
+            # 2. Get user answer
             user_ans = self.get_response()
 
-            # 3. Generate feedback for this turn (Coach turn)
-            turn_feedback = self.generate_feedback(question, user_ans)
+            # 3. Flash Model generates tactical feedback
+            turn_feedback_json = self.generate_feedback(question, user_ans)
             
-            # 4. Create the JSON-style entry and append to mini_report
-            entry = {
+            # 4. Save to report
+            self.mini_report.append({
                 "question_asked": question,
                 "user_response": user_ans,
-                "feedback": turn_feedback
-            }
-            self.mini_report.append(entry)
+                "feedback": json.loads(turn_feedback_json)
+            })
 
-            # 5. Set feedback for the next loop iteration to allow adaptation
-            current_feedback = turn_feedback
+            # 5. Cycle feedback back to the Pro model for the next turn
+            current_feedback = turn_feedback_json
 
-            # Debug print to see the process in the terminal
-            print(f"Added entry: {json.dumps(entry, indent=2)}")
+# import google.generativeai as genai
+# import json
+# import os
+# from firebase import get_persona_data, get_user_info
 
-# Example of how to execute the file
-if __name__ == "__main__":
-    interview = BehavioralInterview()
-    interview.run_interview()
+# # Configure your API Key
+# genai.configure(api_key="AIzaSyD_3ZqPlweHfBMtB_woGdMO1T4oY0zc00k")
+
+# class MockInterviewCore:
+#     def __init__(self, user_email, company_name, interview_level, interview_type):
+#         self.company_name = company_name
+#         self.interview_level = interview_level
+#         self.interview_type = interview_type
+#         self.mini_report = []
+#         # 1. Fetch data from your Firebase functions
+#         # Note: Ensure get_persona_data in firebase.py returns the data!
+#         persona_prompt, _ = get_persona_data(company_name, interview_type)
+#         user_data = get_user_info(user_email)
+#         self.personal_info = user_data['personal_info']
+#         self.user_resume = self.personal_info['resume']
+        
+#         # 2. Setup Gemini 3 Models
+#         self.interviewer_model = genai.GenerativeModel(
+#             model_name='gemini-3-pro-preview', # The adaptive strategist
+#             system_instruction=self._build_system_prompt(persona_prompt)
+#         )
+#         self.feedback_model = genai.GenerativeModel(
+#             model_name='gemini-3-flash-preview' # The tactical evaluator
+#         )
+        
+#         self.chat_session = self.interviewer_model.start_chat(history=[])
+
+#     def _build_system_prompt(self, persona_prompt):
+#         return f"""
+#         {persona_prompt}
+#         Candidate: {self.personal_info['name']}, {self.personal_info['major']} at {self.personal_info['school']}.
+#         Resume: {self.user_resume}
+#         Goal: Conduct a {self.interview_type} interview. If the candidate is vague, drill deeper. 
+#         Output 'Ends' when the session is over.
+#         """
+
+#     def get_question(self, last_feedback=None):
+#         prompt = f"Internal Feedback: {last_feedback}\n\nNext Question:" if last_feedback else "Start the interview."
+#         response = self.chat_session.send_message(prompt)
+#         return response.text.strip()
+
+#     def generate_feedback(self, question, answer):
+#         # Force JSON output for structured tactical analysis
+#         prompt = f"Analyze this interaction for STAR method compliance:\nQ: {question}\nA: {answer}"
+#         response = self.feedback_model.generate_content(
+#             prompt, 
+#             generation_config={"response_mime_type": "application/json"}
+#         )
+#         return response.text.strip()
+
+#     def get_response(self):
+#         """Simulates the audio transcription by taking terminal input."""
+#         print("\n" + "-"*20)
+#         user_input = input("YOUR ANSWER: ")
+#         print("-"*20)
+#         return user_input
+
+#     def run_test_loop(self):
+#         print(f"Starting {self.company_name} Interview Simulation...\n")
+#         current_feedback = None
+        
+#         # Run for 3-4 turns to test adaptation
+#         for i in range(4):
+#             question = self.get_question(last_feedback=current_feedback)
+#             if "Ends" in question: break
+            
+#             print(f"AI: {question}")
+#             answer = self.get_response()
+            
+#             # Generate tactical feedback for the next turn
+#             current_feedback = self.generate_feedback(question, answer)
+            
+#             self.mini_report.append({
+#                 "turn": i+1,
+#                 "question": question,
+#                 "answer": answer,
+#                 "feedback": json.loads(current_feedback)
+#             })
+            
+#         print("\nInterview Complete. Final Mini-Report:")
+#         print(json.dumps(self.mini_report, indent=2))
+
+# if __name__ == "__main__":
+#     # Ensure these match a document in your 'accounts' collection in Firebase
+#     tester = MockInterviewCore(
+#         user_email="liamm24@vt.edu", 
+#         company_name="google", 
+#         interview_level="Medium",
+#         interview_type="behavioral"
+#     )
+#     tester.run_test_loop()

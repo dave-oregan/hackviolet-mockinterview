@@ -1,4 +1,4 @@
-#import google.generativeai as genai
+import google.generativeai as genai
 import os
 from firebase_admin import credentials, firestore, initialize_app, storage, firebase_admin
 from dotenv import load_dotenv
