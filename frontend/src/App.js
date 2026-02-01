@@ -59,7 +59,7 @@ function App() {
         <Route path="/archive" element={<Archive />} />
         
         {/* [2] The Route for your Behavioral Interview */}
-        <Route path="/interview/behavioral" element={<InterviewBehavioral />} />
+        <Route path="/interview-behavioral" element={<InterviewBehavioral />} />
         
       </Routes>
     </Router>

@@ -82,6 +82,7 @@ function InterviewBehavioral() {
       if (!res.ok) throw new Error('Transcription failed');
 
       const data = await res.json();
+      console.log(data)
       if (data.text) setTranscripts((prev) => [...prev, data.text]);
     } catch (err) {
       console.error('Transcription error:', err);
