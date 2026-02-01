@@ -42,9 +42,7 @@ print("✅ Whisper loaded", flush=True)
 @app.route("/api/reset", methods=["POST"])
 def start():
     global current_interview
-    data = request.json
-    user_uuid = data.get("uuid")
-    print(f"This is your submission {user_uuid}")
+    user_uuid = "an649NxxwZPpTe2AOSX7n9H1keB2"
 
     current_interview = MockInterviewCore(
         uuid = user_uuid,
@@ -55,7 +53,7 @@ def start():
     )
 
 # Opener is always this. 
-    name = current_interview.personal_info.get('name', 'Candidate')
+    name = current_interview.personal_info.get('fullName')
     first_q = f"Hi {name}, thanks for joining us today. To start, can you tell me a bit about your background and what interests you about {current_interview.company_name}?"
 # Generate audio    
     try:
