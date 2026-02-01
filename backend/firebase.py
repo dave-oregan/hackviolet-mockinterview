@@ -69,7 +69,14 @@ def add_interview(user_email, company_name, role_targetted, interview_id, report
     except Exception as e:
         print(f"Error adding interview: {e}")
         return False
-         
+    
+def get_persona_data(company_name, interview_type):
+        doc_ref = db.collection("persona").document(company_name)
+        doc = doc_ref.get()     
+        data = doc.to_dict()   
+        
+        print(data)
+
 
 if __name__ == "__main__":
     add_user('Liam', 'liamm24@vt.edu', '123','Virginia Tech','Data Science', '20', [])
@@ -79,3 +86,9 @@ if __name__ == "__main__":
         "feedback":"Great communication and movement of hands"
     }
     add_interview('liamm24@vt.edu', 'Google', 'Software Engineer', '1', test_report)
+    
+    
+
+
+
+

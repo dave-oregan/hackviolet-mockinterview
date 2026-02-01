@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/Interview.css';
 import Mic from '../svg/mic';
@@ -7,85 +7,95 @@ import MicW from '../svg/micw';
 function InterviewBehavioral() {
   const navigate = useNavigate();
   const videoRef = useRef(null);
-  const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
-  const [isListening, setIsListening] = useState(false);
-  const transcriptRef = useRef(''); // holds speech until mic off
+  const [isMicOn, setIsMicOn] = useState(false);
+  const [transcripts, setTranscripts] = useState([]);
 
-  /* -------------------- Camera (video only) -------------------- */
+  /* -------- Camera + Microphone Activation -------- */
   useEffect(() => {
+    let stream;
+
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: false }) // IMPORTANT: no audio
-      .then((stream) => {
-        if (videoRef.current) videoRef.current.srcObject = stream;
+      .getUserMedia({ video: true, audio: true })
+      .then((mediaStream) => {
+        stream = mediaStream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+        }
+
+        mediaRecorderRef.current = new MediaRecorder(mediaStream);
+        mediaRecorderRef.current.ondataavailable = (e) => {
+          audioChunksRef.current.push(e.data);
+        };
+
+        mediaRecorderRef.current.onstop = handleAudioStop;
       })
-      .catch((err) => console.error('Camera Error:', err));
+      .catch((err) => {
+        console.error('Media device error:', err);
+      });
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
   }, []);
 
-  /* ---------------- Speech Recognition Init ---------------- */
-  useEffect(() => {
-    if (!window.SpeechRecognition) {
-      console.error('SpeechRecognition not supported');
-      return;
-    }
+  /* -------- Handle Mic Toggle -------- */
+  const toggleMic = () => {
+    if (!mediaRecorderRef.current) return;
 
-    const recognition = new window.SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-
-    recognition.onresult = (event) => {
-      let chunk = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        chunk += event.results[i][0].transcript;
-      }
-      transcriptRef.current += chunk;
-    };
-
-    recognition.onerror = (e) => {
-      console.error('Speech error:', e);
-    };
-
-    recognitionRef.current = recognition;
-
-    return () => recognition.stop();
-  }, []);
-
-  /* ---------------- Mic Toggle ---------------- */
-  const handleMicToggle = () => {
-    const recognition = recognitionRef.current;
-    if (!recognition) return;
-
-    if (isListening) {
-      recognition.stop();
-
-      // OUTPUT TRANSCRIPT WHEN MIC TURNS OFF
-      const finalTranscript = transcriptRef.current.trim();
-      if (finalTranscript) {
-        console.log('🎤 Final Transcript:', finalTranscript);
-      }
-
-      transcriptRef.current = '';
-      setIsListening(false);
+    if (!isMicOn) {
+      audioChunksRef.current = [];
+      mediaRecorderRef.current.start();
     } else {
-      transcriptRef.current = '';
-      recognition.start();
-      setIsListening(true);
+      mediaRecorderRef.current.stop();
     }
+
+    setIsMicOn((prev) => !prev);
   };
 
-  const handleExit = () => {
-    navigate('/home');
+  /* -------- Send Audio to Whisper -------- */
+  const handleAudioStop = async () => {
+    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'speech.webm');
+
+    try {
+      const res = await fetch('/api/transcribe', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.text) {
+        setTranscripts((prev) => [...prev, data.text]);
+      }
+    } catch (err) {
+      console.error('Transcription error:', err);
+    }
   };
 
   return (
     <div className="interview-container">
+      {/* Header */}
       <div className="interview-header">
-        <button className="interview-exit" onClick={handleExit}>
+        <button className="interview-exit" onClick={() => navigate('/home')}>
           ← Exit
         </button>
-        <button className="interview-settings">⚙ Settings</button>
+
+        <button
+          className="interview-settings"
+          onClick={() => console.log('Transcripts:', transcripts)}
+        >
+          ⚙ Settings
+        </button>
       </div>
 
+      {/* Main */}
       <div className="interview-main">
         <div className="video-grid">
           <div className="video-box user-video">
@@ -99,12 +109,13 @@ function InterviewBehavioral() {
         </div>
       </div>
 
+      {/* Footer */}
       <div className="interview-footer">
         <button
-          className={`mic-button ${isListening ? 'active' : ''}`}
-          onClick={handleMicToggle}
+          className={`mic-button ${isMicOn ? 'active' : ''}`}
+          onClick={toggleMic}
         >
-          {isListening ? <MicW /> : <Mic />}
+          {isMicOn ? <MicW /> : <Mic />}
         </button>
       </div>
     </div>
