@@ -71,7 +71,7 @@ def process_audio():
         next_q = current_interview.process_turn(user_text, last_q)
 
         # --- ElevenLabs TTS ---
-        audio_bytes = generate(
+        audio_bytes = generate(   # Generate text
             text=next_q,
             voice="4e32WqNVWRquDa1OcRYZ",
             model="eleven_monolingual_v1"
@@ -79,6 +79,7 @@ def process_audio():
 
         audio_64 = base64.b64encode(audio_bytes).decode("utf-8")
 
+        # Send next question audio 
         return jsonify({
             "user_transcription": user_text,
             "ai_response": next_q,
