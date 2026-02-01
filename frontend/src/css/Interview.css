@@ -1,166 +1,136 @@
 .interview-container {
-  min-height: 100vh;
-  background-color: #000000;
-  color: white;
-  display: flex;
-  flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    background-color: #060010;
+    display: flex;
+    flex-direction: column;
+    color: white;
+    overflow: hidden;
 }
 
+/* --- Header --- */
 .interview-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(6, 0, 16, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10;
 }
 
-.interview-exit,
-.interview-settings {
-  padding: 8px 16px;
-  background-color: white;
-  border: none;
-  border-radius: 6px;
-  color: #000000;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-  font-size: 14px;
+.interview-exit, .interview-settings {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #cbd5e1;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: 0.2s;
 }
 
-.interview-exit:hover,
-.interview-settings:hover {
-  background-color: #f5f5f7;
-  transform: translateY(-2px);
+.interview-exit:hover, .interview-settings:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
-.interview-exit:active,
-.interview-settings:active {
-  transform: translateY(0);
-}
-
+/* --- Main Grid --- */
 .interview-main {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
 }
 
 .video-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  width: 100%;
-  max-width: 900px;
-  height: 100%;
-  max-height: 600px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1200px;
+    height: 100%;
+    max-height: 600px;
 }
 
 .video-box {
-  position: relative;
-  background: #1a1a1a;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    background: #1a1a1a;
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.user-video video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scaleX(-1); /* mirror the camera */
-}
-
-.placeholder-video {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #1a1a1a, #2a2a2d);
-  font-size: 24px;
-  font-weight: 600;
-  color: #a1a1a6;
+/* User Video Object */
+.video-box video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* Mirror effect */
 }
 
 .video-label {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    background: rgba(0,0,0,0.6);
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: white;
 }
 
+/* AI Placeholder */
+.placeholder-video {
+    color: #64748b;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+/* --- Footer (Controls) --- */
 .interview-footer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6, 0, 16, 0.9);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .mic-button {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: white;
-  border: none;
-  cursor: pointer;
-  font-size: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: #334155;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .mic-button:hover {
-  transform: scale(1.08);
-  box-shadow: 0 12px 30px rgba(255, 255, 255, 0.3);
-}
-
-.mic-button:active {
-  transform: scale(0.96);
+    background: #475569;
+    transform: scale(1.05);
 }
 
 .mic-button.active {
-  background: #ff3b30;
-  color: white;
-  box-shadow: 0 8px 20px rgba(255, 59, 48, 0.4);
+    background: #ef4444; /* Red when recording */
+    animation: pulse 2s infinite;
 }
 
-.transcript-display {
-  position: absolute;
-  bottom: 120px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: #ffffff;
-  padding: 12px 16px;
-  border-radius: 8px;
-  max-width: 80%;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 14px;
-}
-
-@media (max-width: 768px) {
-  .video-grid {
-    grid-template-columns: 1fr;
-    max-height: 400px;
-  }
-
-  .interview-header {
-    padding: 12px 16px;
-  }
-
-  .mic-button {
-    width: 64px;
-    height: 64px;
-    font-size: 24px;
-  }
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
