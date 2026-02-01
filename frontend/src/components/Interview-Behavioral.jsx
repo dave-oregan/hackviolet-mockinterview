@@ -2,12 +2,76 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/InterviewBehavioral.css';
 
+import SpotlightCard from './SpotlightCard';
 import Mic from '../svg/mic';
 import Micw from '../svg/micw';
+
+/* ------------------------------------
+   MOCK REPORT (replace with backend)
+------------------------------------ */
+const report = {
+  video_analysis: {
+    score: 82,
+    categories: {
+      gaze_stability: {
+        score: 78,
+        feedback: 'Good eye contact overall.'
+      },
+      posture_professionalism: {
+        score: 85,
+        feedback: 'Professional posture maintained.'
+      },
+      fidget_detection: {
+        score: 80,
+        feedback: 'Minimal distracting movements.'
+      }
+    }
+  },
+  audio_analysis: {
+    score: 88,
+    categories: {
+      vocal_clarity: {
+        score: 90,
+        feedback: 'Clear and understandable voice.'
+      },
+      pacing_and_flow: {
+        score: 84,
+        feedback: 'Good pacing with minor rushes.'
+      },
+      tone_and_confidence: {
+        score: 89,
+        feedback: 'Confident and steady tone.'
+      }
+    }
+  },
+  overall_analysis: {
+    final_score: 86,
+    interview_persona: 'Confident Communicator',
+    summary:
+      'Strong overall performance with clear communication and professional presence.',
+    top_strengths: ['Vocal clarity', 'Professional posture'],
+    improvement_priorities: ['Eye contact consistency', 'Answer pacing']
+  }
+};
+
+/* ------------------------------------
+   Reusable Card
+------------------------------------ */
+const ScoreCard = ({ title, score, subtitle }) => (
+  <SpotlightCard
+    className="custom-spotlight-card"
+    spotlightColor="rgba(0, 229, 255, 0.2)"
+  >
+    <h3>{title}</h3>
+    <p style={{ fontSize: '2.2rem', fontWeight: 700 }}>{score}</p>
+    {subtitle && <p style={{ opacity: 0.7 }}>{subtitle}</p>}
+  </SpotlightCard>
+);
 
 function InterviewBehavioral() {
   const navigate = useNavigate();
 
+  const [showEndModal, setShowEndModal] = useState(false);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
@@ -23,9 +87,9 @@ function InterviewBehavioral() {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
-  // -------------------------
-  // Start Interview
-  // -------------------------
+  /* -------------------------
+     Start Interview
+  ------------------------- */
   const startInterview = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -49,16 +113,36 @@ function InterviewBehavioral() {
 
       detectAudioLevel();
       setIsInterviewStarted(true);
-
     } catch (err) {
-      console.error('Failed to start interview:', err);
+      console.error(err);
       alert('Microphone access failed.');
     }
   };
 
-  // -------------------------
-  // Mic Level Visualizer
-  // -------------------------
+  const endInterview = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+
+    analyserRef.current = null;
+    setMicLevel(0);
+    setShowEndModal(true);
+  };
+
+  /* -------------------------
+     Mic Level Visualizer
+  ------------------------- */
   const detectAudioLevel = () => {
     if (!analyserRef.current) return;
 
@@ -71,73 +155,51 @@ function InterviewBehavioral() {
     requestAnimationFrame(detectAudioLevel);
   };
 
-  // -------------------------
-  // Start Recording (WebM only)
-  // -------------------------
+  /* -------------------------
+     Recording Logic
+  ------------------------- */
   const startRecording = () => {
     if (!streamRef.current || isLoading || isRecording) return;
 
-    try {
-      audioChunksRef.current = [];
+    audioChunksRef.current = [];
 
-      // 🔑 CLONE the audio track (critical fix)
-      const audioTrack = streamRef.current.getAudioTracks()[0];
-      const recordingStream = new MediaStream([audioTrack.clone()]);
+    const audioTrack = streamRef.current.getAudioTracks()[0];
+    const recordingStream = new MediaStream([audioTrack.clone()]);
 
-      const recorder = new MediaRecorder(recordingStream, {
-        mimeType: 'audio/webm'
+    const recorder = new MediaRecorder(recordingStream, {
+      mimeType: 'audio/webm'
+    });
+
+    recorder.ondataavailable = e => {
+      if (e.data.size > 0) audioChunksRef.current.push(e.data);
+    };
+
+    recorder.onstop = () => {
+      const blob = new Blob(audioChunksRef.current, {
+        type: 'audio/webm'
       });
+      handleAudioSubmit(blob);
+    };
 
-      recorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) {
-          audioChunksRef.current.push(e.data);
-        }
-      };
-
-      recorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, {
-          type: 'audio/webm'
-        });
-
-        mediaRecorderRef.current = null;
-        handleAudioSubmit(blob);
-      };
-
-      recorder.start(); // ✅ stable
-      mediaRecorderRef.current = recorder;
-      setIsRecording(true);
-
-    } catch (err) {
-      console.error('Recorder start failed:', err);
-      alert('Recording failed to start.');
-    }
+    recorder.start();
+    mediaRecorderRef.current = recorder;
+    setIsRecording(true);
   };
 
-  // -------------------------
-  // Stop Recording
-  // -------------------------
   const stopRecording = () => {
     if (!mediaRecorderRef.current) return;
-
     mediaRecorderRef.current.stop();
     setIsRecording(false);
   };
 
-  // -------------------------
-  // Toggle Recording
-  // -------------------------
   const toggleRecording = () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
-    }
+    isRecording ? stopRecording() : startRecording();
   };
 
-  // -------------------------
-  // Send Audio
-  // -------------------------
-  const handleAudioSubmit = async (audioBlob) => {
+  /* -------------------------
+     Backend Audio
+  ------------------------- */
+  const handleAudioSubmit = async audioBlob => {
     setIsLoading(true);
 
     const lastAiMessage =
@@ -150,26 +212,19 @@ function InterviewBehavioral() {
     try {
       const response = await fetch(
         'http://localhost:5001/api/process-audio',
-        {
-          method: 'POST',
-          body: formData
-        }
+        { method: 'POST', body: formData }
       );
 
       const data = await response.json();
       processResponse(data);
-
     } catch (err) {
-      console.error('Upload failed:', err);
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // -------------------------
-  // Handle Backend Response
-  // -------------------------
-  const processResponse = (data) => {
+  const processResponse = data => {
     if (data.user_transcription) {
       setMessages(prev => [
         ...prev,
@@ -177,11 +232,10 @@ function InterviewBehavioral() {
       ]);
     }
 
-    const aiText = data.reply || data.ai_response;
-    if (aiText) {
+    if (data.reply || data.ai_response) {
       setMessages(prev => [
         ...prev,
-        { role: 'ai', text: aiText }
+        { role: 'ai', text: data.reply || data.ai_response }
       ]);
     }
 
@@ -193,9 +247,9 @@ function InterviewBehavioral() {
     }
   };
 
-  // -------------------------
-  // UI
-  // -------------------------
+  /* -------------------------
+     UI
+  ------------------------- */
   return (
     <div className="interview-container">
       {!isInterviewStarted && (
@@ -207,8 +261,15 @@ function InterviewBehavioral() {
       )}
 
       <header className="interview-header">
-        <button onClick={() => navigate('/')}>Exit</button>
-        <span>Mock Interview</span>
+        <button className="interview-exit" onClick={() => navigate('/')}>
+          Exit
+        </button>
+        <span className="timer">
+          Mock Interview: {localStorage.getItem('company-key')}
+        </span>
+        <button className="interview-settings" onClick={endInterview}>
+          End Meeting
+        </button>
       </header>
 
       <main className="interview-main">
@@ -234,6 +295,77 @@ function InterviewBehavioral() {
           {isRecording ? <Micw /> : <Mic />}
         </button>
       </footer>
+
+      {showEndModal && (
+        <div className="end-modal-overlay">
+          <div className="end-modal">
+            <h2>Interview Complete: Your Results</h2>
+
+            <div className="end-modal-content">
+              <ScoreCard
+                title="Final Score"
+                score={report.overall_analysis.final_score}
+                subtitle={report.overall_analysis.interview_persona}
+              />
+              <ScoreCard
+                title="Video Score"
+                score={report.video_analysis.score}
+                subtitle="Body Language"
+              />
+              <ScoreCard
+                title="Eye Contact"
+                score={report.video_analysis.categories.gaze_stability.score}
+              />
+              <ScoreCard
+                title="Posture"
+                score={
+                  report.video_analysis.categories.posture_professionalism.score
+                }
+              />
+              <ScoreCard
+                title="Audio Score"
+                score={report.audio_analysis.score}
+                subtitle="Speaking"
+              />
+              <ScoreCard
+                title="Vocal Clarity"
+                score={
+                  report.audio_analysis.categories.vocal_clarity.score
+                }
+              />
+            </div>
+
+            <p style={{ marginTop: '1.5rem', opacity: 0.85 }}>
+              {report.overall_analysis.summary}
+            </p>
+
+            <p>
+              <strong>Top Strengths:</strong><br />
+              {report.overall_analysis.top_strengths.join(', ')}
+            </p>
+
+            <p>
+              <strong>Improvement Priorities:</strong><br />
+              {report.overall_analysis.improvement_priorities.join(', ')}
+            </p>
+
+            <div className="end-modal-footer">
+              <button
+                className="end-modal-exit"
+                onClick={() => navigate('/archive')}
+              >
+                See further breakdown
+              </button>
+              <button
+                className="end-modal-exit"
+                onClick={() => navigate('/')}
+              >
+                Return to Homepage
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
