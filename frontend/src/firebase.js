@@ -1,13 +1,10 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from 'firebase/firestore'
-require('dotenv').cofig();
-
-const API_KEY = process.env.FIREBASE_API
 
 // should remove hardcoding
 const firebaseConfig = {
-  apiKey: API_KEY,
+  apiKey: KEY,
   authDomain: "hackviolet2026.firebaseapp.com",
   projectId: "hackviolet2026",
   storageBucket: "hackviolet2026.firebasestorage.app",
