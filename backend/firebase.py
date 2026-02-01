@@ -15,7 +15,7 @@ if not firebase_admin._apps:
     cred = credentials.Certificate({
         "project_id": os.getenv("FB_PROJECT_ID"),
         "client_email": os.getenv("FB_CLIENT_EMAIL"),
-        "private_key": os.getenv("FB_PRIVATE_KEY"),
+        "private_key": os.getenv("FB_PRIVATE_KEY").replace("\\n", "\n"),
         "type": "service_account",
         "token_uri": os.getenv("FB_TOKEN_URI"),
     })
