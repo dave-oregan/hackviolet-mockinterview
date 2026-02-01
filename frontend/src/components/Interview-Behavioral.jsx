@@ -21,25 +21,34 @@ function InterviewBehavioral() {
       .getUserMedia({ video: true, audio: true })
       .then((mediaStream) => {
         stream = mediaStream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
+
+        if (videoRef.current) videoRef.current.srcObject = mediaStream;
+
+        try {
+          const option = { mimeType: 'video/webm' }; 
+
+          if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+            option.mimeType = 'video/webm;codecs=vp9';
+          } else if (MediaRecorder.isTypeSupported('video/webm')) {
+            option.mimeType = 'video/webm';
+          }
+
+          mediaRecorderRef.current = new MediaRecorder(mediaStream, option);
+        } catch (err) {
+          console.error('Failed to create MediaRecorder:', err);
+          return;
         }
 
-        mediaRecorderRef.current = new MediaRecorder(mediaStream);
         mediaRecorderRef.current.ondataavailable = (e) => {
           audioChunksRef.current.push(e.data);
         };
 
         mediaRecorderRef.current.onstop = handleAudioStop;
       })
-      .catch((err) => {
-        console.error('Media device error:', err);
-      });
+      .catch((err) => console.error('Media device error:', err));
 
     return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
+      if (stream) stream.getTracks().forEach((track) => track.stop());
     };
   }, []);
 
@@ -47,33 +56,33 @@ function InterviewBehavioral() {
   const toggleMic = () => {
     if (!mediaRecorderRef.current) return;
 
-    if (!isMicOn) {
-      audioChunksRef.current = [];
-      mediaRecorderRef.current.start();
-    } else {
-      mediaRecorderRef.current.stop();
+    try {
+      if (!isMicOn) {
+        audioChunksRef.current = [];
+        mediaRecorderRef.current.start();
+      } else {
+        mediaRecorderRef.current.stop();
+      }
+      setIsMicOn((prev) => !prev);
+    } catch (err) {
+      console.error('MediaRecorder start/stop error:', err);
     }
-
-    setIsMicOn((prev) => !prev);
   };
 
   /* -------- Send Audio to Whisper -------- */
   const handleAudioStop = async () => {
-    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+    if (!audioChunksRef.current.length) return;
+
+    const audioBlob = new Blob(audioChunksRef.current, { type: "webp" });
     const formData = new FormData();
-    formData.append('file', audioBlob, 'speech.webm');
+    formData.append('file', audioBlob, `speech.webm`);
 
     try {
-      const res = await fetch('/api/transcribe', {
-        method: 'POST',
-        body: formData,
-      });
+      const res = await fetch('/api/transcribe', { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('Transcription failed');
 
       const data = await res.json();
-
-      if (data.text) {
-        setTranscripts((prev) => [...prev, data.text]);
-      }
+      if (data.text) setTranscripts((prev) => [...prev, data.text]);
     } catch (err) {
       console.error('Transcription error:', err);
     }
