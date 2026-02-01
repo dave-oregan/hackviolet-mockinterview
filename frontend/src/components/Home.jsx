@@ -59,6 +59,13 @@ function Home() {
                     difficulty: finalData.difficulty 
                 } 
             });
+        } else if (finalData.type === 'Technical') {
+            navigate('/interview/technical', { 
+                state: { 
+                    company: finalData.company,
+                    difficulty: finalData.difficulty 
+                } 
+            });
         } else {
             console.warn("Unknown interview type selected");
         }

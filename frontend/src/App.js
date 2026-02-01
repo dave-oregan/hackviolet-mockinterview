@@ -57,8 +57,11 @@ function App() {
         <Route path="/archive" element={<Archive />} />
         
         {/* [2] The Route for your Behavioral Interview */}
+<<<<<<< Updated upstream
         <Route path="/interview-behavioral" element={<InterviewBehavioral />} />
         
+=======
+>>>>>>> Stashed changes
         <Route path="/interview/behavioral" element={<InterviewBehavioral />} />
         <Route path="/interview/technical" element={<InterviewTechnical />} />
       </Routes>
