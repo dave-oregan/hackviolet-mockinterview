@@ -7,49 +7,210 @@ const DEFAULT_SPOTLIGHT_RADIUS = 400;
 const DEFAULT_GLOW_COLOR = '132, 0, 255'; // Purple theme
 const MOBILE_BREAKPOINT = 768;
 
+// --- Custom Components for Card Content ---
+
+const PerformanceChart = () => {
+  // Mock Data: 7 days of interview scores
+  const data = [65, 72, 68, 85, 82, 90, 88];
+  const max = 100;
+  const points = data.map((val, i) => {
+    const x = (i / (data.length - 1)) * 100;
+    const y = 100 - (val / max) * 100;
+    return `${x},${y}`;
+  }).join(' ');
+
+  // Gradient fill area
+  const fillPoints = `0,100 ${points} 100,100`;
+
+  // [1] Refs for animation
+  const lineRef = useRef(null);
+  const containerRef = useRef(null);
+
+  // [2] Animation Handler
+  const handleMouseEnter = () => {
+    if (lineRef.current) {
+      const length = lineRef.current.getTotalLength();
+      
+      // Reset to "undrawn" state (offset = length) then animate to 0
+      gsap.fromTo(
+        lineRef.current,
+        { strokeDasharray: length, strokeDashoffset: length },
+        { strokeDashoffset: 0, duration: 1.5, ease: 'power2.out' }
+      );
+    }
+  };
+
+  // Ensure line is visible on initial load without animation (optional)
+  useEffect(() => {
+    if (lineRef.current) {
+       const length = lineRef.current.getTotalLength();
+       gsap.set(lineRef.current, { strokeDasharray: length, strokeDashoffset: 0 });
+    }
+  }, []);
+
+  return (
+    <div 
+      ref={containerRef}
+      onMouseEnter={handleMouseEnter} // [3] Trigger animation on hover
+      style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', paddingTop: '20px' }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+        <div>
+          <span style={{ fontSize: '2.5rem', fontWeight: '700', color: '#fff' }}>+12%</span>
+          <span style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Weekly Growth</span>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+           <span style={{ fontSize: '1.2rem', fontWeight: '600', color: '#a78bfa' }}>88.0</span>
+           <span style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Avg Score</span>
+        </div>
+      </div>
+      
+      <div style={{ flex: 1, position: 'relative', minHeight: '100px' }}>
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+          {/* Gradient Definition */}
+          <defs>
+            <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="rgba(132, 0, 255, 0.5)" />
+              <stop offset="100%" stopColor="rgba(132, 0, 255, 0)" />
+            </linearGradient>
+          </defs>
+          
+          {/* Grid Lines */}
+          <line x1="0" y1="25" x2="100" y2="25" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" strokeDasharray="2" />
+          <line x1="0" y1="50" x2="100" y2="50" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" strokeDasharray="2" />
+          <line x1="0" y1="75" x2="100" y2="75" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" strokeDasharray="2" />
+
+          {/* Area Fill */}
+          <polygon points={fillPoints} fill="url(#chartGradient)" />
+
+          {/* Line Path with Ref */}
+          <polyline 
+            ref={lineRef} // [4] Attach ref
+            points={points} 
+            fill="none" 
+            stroke="#8400ff" 
+            strokeWidth="3" 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            vectorEffect="non-scaling-stroke"
+          />
+
+          {/* Data Points */}
+          {data.map((val, i) => {
+             const x = (i / (data.length - 1)) * 100;
+             const y = 100 - (val / max) * 100;
+             return (
+               <circle key={i} cx={x} cy={y} r="1.5" fill="#fff" />
+             );
+          })}
+        </svg>
+      </div>
+    </div>
+  );
+};
+
+const HistoryList = () => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
+    {[
+      { company: 'Goldman Sachs', type: 'Behavioral', score: 85, date: '2h ago' },
+      { company: 'Google', type: 'Technical', score: 72, date: 'Yesterday' },
+      { company: 'Amazon', type: 'Leadership', score: 91, date: '2 days ago' },
+      { company: 'Meta', type: 'Behavioral', score: 78, date: '3 days ago' },
+      { company: 'General Interview', type: 'Technical', score: 82, date: '6 days ago' },
+
+    ].map((item, i) => (
+      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+        <div>
+          <div style={{ color: '#fff', fontWeight: '500' }}>{item.company}</div>
+          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>{item.type}</div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+           <div style={{ color: item.score >= 80 ? '#4ade80' : '#fbbf24', fontWeight: '600' }}>{item.score}%</div>
+           <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>{item.date}</div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const ResourceList = () => (
+  <ul style={{ listStyle: 'none', padding: 0, margin: '5px 0 0 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    {['STAR Method Guide', '50 Common SQL Qs', 'Body Language 101'].map((item, i) => (
+      <li key={i} style={{ 
+        background: 'rgba(255,255,255,0.05)', 
+        padding: '8px 12px', 
+        borderRadius: '8px', 
+        fontSize: '0.8rem', 
+        color: 'rgba(255,255,255,0.8)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+      }}>
+        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#8400ff' }}></span>
+        {item}
+      </li>
+    ))}
+  </ul>
+);
+
+const SettingsPreview = () => (
+  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '5px' }}>
+     <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px' }}>
+        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>Difficulty</div>
+        <div style={{ color: '#fff', fontWeight: '600', marginTop: '4px' }}>Expert</div>
+     </div>
+     <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '12px' }}>
+        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>Focus</div>
+        <div style={{ color: '#fff', fontWeight: '600', marginTop: '4px' }}>Finance</div>
+     </div>
+  </div>
+);
+
+// --- Data Configuration ---
+
 // Data ordered specifically to fit the CSS Grid Layout (Hero -> Tall -> Standard -> Wide)
 const cardData = [
   // 1. Big Feature Card (2x2) - Performance Overview
   {
     color: '#0a0a0a',
     title: 'Performance',
-    description: 'You have improved by 12% this week. Keep practicing behavioral questions to maintain your streak.',
-    label: 'Overview'
+    label: 'Analytics',
+    renderContent: () => <PerformanceChart />
   },
   // 2. Tall Side Card (1x2) - History Timeline
   {
     color: '#0a0a0a',
-    title: 'History',
-    description: 'View your last 12 sessions and recordings.',
-    label: 'Archive'
+    title: 'Recent Activity',
+    label: 'History',
+    renderContent: () => <HistoryList />
   },
   // 3. Standard Card (1x1) - Immediate Action
   {
     color: '#0a0a0a',
-    title: 'New Interview',
-    description: 'Start a new session.',
-    label: 'Action'
+    title: 'New Session',
+    label: 'Action',
+    description: 'Start a new mock interview. Choose from Behavioral or Technical tracks.'
   },
   // 4. Standard Card (1x1) - Learning
   {
     color: '#0a0a0a',
     title: 'Resources',
-    description: 'Prep guides & cheat sheets.',
-    label: 'Learn'
+    label: 'Library',
+    renderContent: () => <ResourceList />
   },
   // 5. Standard Card (1x1) - Feedback
   {
     color: '#0a0a0a',
-    title: 'Feedback',
-    description: 'Review recent AI insights.',
-    label: 'Tips'
+    title: 'Coach Insights',
+    label: 'Feedback',
+    description: '"Your pacing has improved. Try to reduce filler words like \'um\' during technical explanations."'
   },
   // 6. Wide Card (2x1) - System/Settings
   {
     color: '#0a0a0a',
-    title: 'Settings',
-    description: 'Customize your difficulty, interview topics, and notification preferences.',
-    label: 'System'
+    title: 'Preferences',
+    label: 'System',
+    renderContent: () => <SettingsPreview />
   }
 ];
 
@@ -489,9 +650,13 @@ const MagicBento = ({
               <div className="magic-bento-card__header">
                 <div className="magic-bento-card__label">{card.label}</div>
               </div>
-              <div className="magic-bento-card__content">
+              <div className="magic-bento-card__content" style={{ height: '100%' }}>
                 <h2 className="magic-bento-card__title">{card.title}</h2>
-                <p className="magic-bento-card__description">{card.description}</p>
+                {card.renderContent ? (
+                  card.renderContent()
+                ) : (
+                  <p className="magic-bento-card__description">{card.description}</p>
+                )}
               </div>
             </ParticleCard>
           );
