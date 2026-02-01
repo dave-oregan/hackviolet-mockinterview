@@ -147,12 +147,11 @@ def chat_text_only():
     except Exception as e:
         print("❌ ERROR:", str(e), flush=True)
         return jsonify({"error": str(e)}), 500
-
 @app.route("/api/finalize", methods=["POST"])
 def finalize_interview():
     try:
         # 1. Get the video file from frontend
-        video_file = request.files.get("video")  # This is your state. its a blob file
+        video_file = request.files.get("video")
         if not video_file:
             return jsonify({"error": "No video recording found"}), 400
 
@@ -162,25 +161,40 @@ def finalize_interview():
             temp_video_path = tmp.name
             
         print('starting final analysis')
-        # 3. Trigger Audio Analysis (using the history inside current_interview)
+        
+        # 3. Trigger Audio Analysis
         audio_report = current_interview.generate_audio_feedback()
+        print(f"Audio report: {audio_report}")
 
-        # 4. Trigger Video Analysis (using your separate function)
+        # 4. Trigger Video Analysis
         video_report = analyze_interview_video(temp_video_path)
-        # 5. Final Synthesis: Tell MockInterviewCore to merge them
-        final_master_report = current_interview.generate_final_synthesis(
+        print(f"Video report: {video_report}")
+        
+        # 5. Final Synthesis
+        overall = current_interview.generate_final_synthesis(
             audio_report, 
             video_report
         )
-        print(final_master_report)
+        print(f"Overall: {overall}")
 
-        # 6. Clean up the disk
+        # 6. Combine all reports into one master dict
+        master_report = {
+            **audio_report,      # Spreads audio_analysis into the dict
+            "video_analysis": video_report,  # Adds video_analysis
+            **overall            # Spreads overall_analysis into the dict
+        }
+        
+        print(f"Master report: {master_report}")
+
+        # 7. Clean up the disk
         os.remove(temp_video_path)
 
-        return jsonify(final_master_report)
+        return jsonify(master_report)
 
     except Exception as e:
         print("❌ FINALIZATION ERROR:", str(e), flush=True)
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 # -----------------------
 # Run
