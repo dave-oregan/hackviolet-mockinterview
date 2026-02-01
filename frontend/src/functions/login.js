@@ -3,7 +3,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, FIREBASE_DB } from "../firebase";
 
 export const loginUser = async (email, password) => {
@@ -13,10 +13,12 @@ export const loginUser = async (email, password) => {
       email,
       password
     );
+    
+    const uid = userCredential.user;
 
-    const token = await userCredential.user.getIdToken();
+    const userdoc = await getDoc(doc(FIREBASE_DB, "accounts", uid));
 
-    localStorage.setItem("token", token);
+    localStorage.setItem("name", userdoc.name);
 
     return { success: true };
   } catch (error) {
