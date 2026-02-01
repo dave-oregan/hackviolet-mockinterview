@@ -97,6 +97,7 @@
     flex: 1;
     display: flex;
     overflow: hidden;
+    height: 85vh;
     padding: 1rem;
     gap: 1rem;
 }
@@ -273,4 +274,44 @@
     border-radius: 6px;
     color: white;
     backdrop-filter: blur(4px);
+}
+
+.bottom-row {
+  display: flex;
+  border-top: 1px solid #1e293b;
+  min-height: 120px;
+}
+
+.mini-menu {
+  width: 48px;
+  background: #020617;
+  border-right: 1px solid #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mic-button {
+  background: transparent;
+  border: 1px solid #1e293b;
+  border-radius: 50%;
+  padding: 8px;
+  cursor: pointer;
+  color: #94a3b8;
+}
+
+.mic-button.active {
+  background: #dc2626;
+  color: white;
+}
+
+.testcase-panel {
+  flex: 1;
+  background: #020617;
+}
+
+.testcase-content {
+  font-size: 13px;
+  color: #94a3b8;
+  padding: 8px 12px;
 }
