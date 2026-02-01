@@ -24,7 +24,7 @@
     z-index: 10;
 }
 
-.interview-exit, .interview-settings {
+.interview-exit {
     background: rgba(255, 255, 255, 0.1);
     border: none;
     color: #cbd5e1;
@@ -35,8 +35,24 @@
     transition: 0.2s;
 }
 
-.interview-exit:hover, .interview-settings:hover {
+.interview-exit:hover {
     background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.interview-settings {
+    background: #e41212;
+    border: none;
+    color: #cbd5e1;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.interview-settings:hover {
+    background: #c02020;
     color: white;
 }
 

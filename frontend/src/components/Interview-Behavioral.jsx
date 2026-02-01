@@ -163,8 +163,8 @@ function InterviewBehavioral() {
 
       <header className="interview-header">
          <button className="interview-exit" onClick={() => navigate('/')}>Exit</button>
-         <span className="timer">Mock Interview: Goldman Sachs</span>
-         <button className="interview-settings">Settings</button>
+         <span className="timer">Mock Interview: company loading...</span>
+         <button className="interview-settings">End Meeting</button>
       </header>
 
       <main className="interview-main">
