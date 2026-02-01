@@ -43,7 +43,7 @@ function Home() {
 
         // [2] Check type and navigate
         if (finalData.type === 'Behavioral') {
-            navigate('/interview/behavioral', { 
+            navigate('/interview-behavioral', { 
                 state: { 
                     company: finalData.company,
                     difficulty: finalData.difficulty 
