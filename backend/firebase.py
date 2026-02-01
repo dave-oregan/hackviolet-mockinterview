@@ -9,11 +9,13 @@ import uuid
 
 load_dotenv()
 
+# Initialize only once
+# Initialize Firebase
 if not firebase_admin._apps:
     cred = credentials.Certificate({
         "project_id": os.getenv("FB_PROJECT_ID"),
         "client_email": os.getenv("FB_CLIENT_EMAIL"),
-        "private_key": os.getenv("FB_PRIVATE_KEY").replace('\\n', '\n'),
+        "private_key": os.getenv("FB_PRIVATE_KEY"),
         "type": "service_account",
         "token_uri": os.getenv("FB_TOKEN_URI"),
     })
@@ -61,17 +63,17 @@ def add_interview(user_email, company_name, role_targetted, interview_id, report
         user_ref.update({
             "history": firestore.ArrayUnion([interview])  # Update the history
             })
-
+        
         print(f"Interview {interview_id} added for {user_email}")
         return True
     except Exception as e:
         print(f"Error adding interview: {e}")
         return False
-
+    
 def get_persona_data(company_name, interview_type):
         doc_ref = db.collection("persona").document(company_name)
-        doc = doc_ref.get()
-        data = doc.to_dict() 
+        doc = doc_ref.get()     
+        data = doc.to_dict()   
         
         persona_prompt = (data[interview_type]['persona_prompt'])
         additional_info = (data[interview_type]['additional_info'])
@@ -80,16 +82,22 @@ def get_persona_data(company_name, interview_type):
 def get_user_info(user_email):
     data = db.collection("accounts").document(user_email).get().to_dict() 
     return data
-
-if __name__ == "main":
-    add_user('Liam', 'liamm24@vt.edu', '123','Virginia Tech','Data Science', '20', [])
-
+    
+if __name__ == "__main__":
+    #add_user('Liam', 'liamm24@vt.edu', '123','Virginia Tech','Data Science', '20', [])
+    
     test_report = {
         "score":"80",
         "feedback":"Great communication and movement of hands"
     }
-    add_interview('liamm24@vt.edu', 'Google', 'Software Engineer', '1', test_report)
+    add_interview('liamm24@vt.edu', 'Google', 'Software Engineer', '3', test_report)
+    print('success to add interview')
     get_persona_data('google', 'behavioral')
-
+    
     get_user_info('liamm24@vt.edu')
+    
+    
+
+
+
 

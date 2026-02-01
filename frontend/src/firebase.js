@@ -4,7 +4,7 @@ import { getFirestore } from 'firebase/firestore'
 
 // should remove hardcoding
 const firebaseConfig = {
-  apiKey: "AIzaSyBIbyILB8CNW1sUNJQdCye15o029t3UEXk",
+  apiKey: KEY,
   authDomain: "hackviolet2026.firebaseapp.com",
   projectId: "hackviolet2026",
   storageBucket: "hackviolet2026.firebasestorage.app",

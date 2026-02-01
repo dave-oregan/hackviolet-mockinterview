@@ -18,6 +18,8 @@
 .env.test.local
 .env.production.local
 /whisper-env
+./backend/.env
+.env
 
 npm-debug.log*
 yarn-debug.log*
@@ -25,3 +27,4 @@ yarn-error.log*
 
 # Servers
 /firebase/__pycache__
+/backend/__pycache__

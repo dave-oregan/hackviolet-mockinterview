@@ -95,7 +95,7 @@ function Interview() {
     formData.append('audio', audioBlob, 'input.webm');
 
     try {
-      const response = await fetch('http://localhost:5000/api/process-audio', {
+      const response = await fetch('http://localhost:5001/api/process-audio', {
         method: 'POST',
         body: formData, // No Content-Type header needed (browser handles it)
       });
@@ -136,8 +136,8 @@ function Interview() {
       {/* Main Grid & Header (Same as before) */}
       <header className="interview-header">
          <button className="interview-exit" onClick={() => navigate('/')}>Exit</button>
-         <span className="timer">Mock Interview: Goldman Sachs</span>
-         <button className="interview-settings">Settings</button>
+         <span className="timer">Mock Interview: {localStorage.getItem("company-key")}</span>
+         <button className="interview-settings">End Meeting</button>
       </header>
 
       <main className="interview-main">
