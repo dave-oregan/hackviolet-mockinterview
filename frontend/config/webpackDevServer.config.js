@@ -1,0 +1,1 @@
+allowedHosts: 'all',

@@ -7,6 +7,7 @@ import Micw from '../svg/micw';
 
 function InterviewBehavioral() {
   const navigate = useNavigate();
+  const [currentQuestion, setCurrentQuestion] = useState("Introduction");
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
