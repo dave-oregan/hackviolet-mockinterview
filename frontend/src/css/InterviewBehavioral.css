@@ -293,3 +293,245 @@ a {
     width: fit-content;
     text-align: center;
 }
+.end-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 0, 16, 0.92);
+    backdrop-filter: blur(20px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.professional-dashboard {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 32px;
+    padding: 3.5rem;
+    width: 100%;
+    max-width: 850px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+}
+
+.dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(180deg, #fff 0%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.overall-score-pill {
+    background: rgba(132, 0, 255, 0.05);
+    border: 1px solid rgba(132, 0, 255, 0.2);
+    border-radius: 100px;
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.pill-num { font-size: 1.8rem; font-weight: 900; color: #a78bfa; }
+.pill-sub { font-size: 0.6rem; letter-spacing: 0.1em; color: #6366f1; }
+
+.metrics-grid {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+}
+
+.metric-item { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.metric-label { font-size: 0.7rem; letter-spacing: 0.2em; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
+
+.insights-panel {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.panel-title { font-size: 0.7rem; font-weight: 800; color: #818cf8; margin-bottom: 0.5rem; display: flex; gap: 0.5rem; }
+
+.dashboard-footer { display: flex; justify-content: flex-end; gap: 1rem; }
+.dash-btn-primary { background: #fff; color: #000; border: none; padding: 1rem 2rem; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+.dash-btn-secondary { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 1rem 2rem; border-radius: 12px; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+/* --- Positioning & Layout Fixes --- */
+
+.analysis-breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Split into two equal columns */
+    gap: 2.5rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05); /* Subtle separator */
+}
+
+.analysis-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.column-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 700;
+}
+
+.column-text {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.feedback-content {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+    margin-bottom: 0.5rem; /* Space before the columns */
+}
+
+/* Adjust footer buttons for a cleaner professional look */
+.dashboard-footer {
+    margin-top: auto; /* Pushes footer to bottom of modal */
+    display: flex;
+    justify-content: flex-end;
+    gap: 1.25rem;
+}
+/* --- Dashboard Layout Fixes --- */
+
+.professional-dashboard {
+    max-height: 90vh; /* Prevent modal from going off-screen */
+    overflow-y: auto; /* Allow internal scroll if content is too tall */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Moves the overall score slightly to the left */
+.overall-score-pill {
+    margin-right: 2.5rem; 
+}
+
+/* Fixes the side-by-side strengths/priorities */
+.analysis-breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 1.5rem;
+}
+
+.column-label {
+    display: block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 0.4rem;
+}
+
+/* Ensures text is perfectly centered in the rings */
+.metric-item .relative {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.metric-item .absolute {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* Prevents buttons from being cut off at the bottom */
+.dashboard-footer {
+    margin-top: 2rem;
+    padding-bottom: 0.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+/* --- Dashboard Positioning & Typography Fixes --- */
+
+/* Larger, high-end font for the company name */
+.company-tag-large {
+    font-size: 0.95rem;
+    letter-spacing: 0.45em;
+    color: #818cf8;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Move the score pill slightly left */
+.score-pill-adjusted {
+    margin-right: 3.5rem; 
+}
+
+/* Ensure percentages are mathematically centered in the SVG */
+.metric-item .relative {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.metric-item .absolute {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.analysis-breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 1.5rem;
+}
+
+.column-label {
+    display: block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 0.4rem;
+}
+
+.column-text {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Prevents buttons from being cut off */
+.professional-dashboard {
+    max-height: 95vh;
+    padding: 3rem 4rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-footer {
+    margin-top: 2rem;
+    padding-bottom: 1rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1.25rem;
+}
