@@ -5,6 +5,7 @@ import tempfile
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
+from behavioral import run_test_loop
 
 # --- UPDATED: New Google SDK ---
 from google import genai
