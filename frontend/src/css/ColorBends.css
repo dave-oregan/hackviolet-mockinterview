@@ -1,0 +1,9 @@
+.color-bends-container {
+  position: fixed; /* Fixed ensures it covers the viewport completely */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0; /* Stays behind everything */
+  pointer-events: none;
+}

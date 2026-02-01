@@ -8,10 +8,8 @@ import Home from './components/Home';
 import Progress from './components/Progress';
 import Survey from './components/Survey'; 
 import Archive from './components/Archive';
-
-// [1] Import your file exactly as you named it
+import InterviewTechnical from './components/InterviewTechnical';
 import InterviewBehavioral from './components/Interview-Behavioral'; 
-
 import DotGrid from './components/Dotgrid';
 import SplitText from './components/SplitText';
 import FadeContent from './components/FadeContent';
@@ -58,9 +56,9 @@ function App() {
         <Route path="/progress" element={<Progress />} />
         <Route path="/archive" element={<Archive />} />
         
-        {/* [2] The Route for your Behavioral Interview */}
+        {/* The Route for the Interview */}
         <Route path="/interview-behavioral" element={<InterviewBehavioral />} />
-        
+        <Route path="/interview/technical" element={<InterviewTechnical />} />
       </Routes>
     </Router>
   );

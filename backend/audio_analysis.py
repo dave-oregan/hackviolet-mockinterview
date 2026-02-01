@@ -1,67 +1,87 @@
 import google.generativeai as genai
 import os
-from firebase_admin import credentials, firestore, initialize_app, storage, firebase_admin
 from dotenv import load_dotenv
-
+from firebase import get_persona_data, get_user_info
 load_dotenv()
 
 
-# Configuration for the Gemini API
-#genai.configure(api_key="YOUR_GEMINI_API_KEY")
 
 class InterviewManager:
-    def __init__(self, persona_info, user_resume, interview_type):
+    def __init__(self, user_email, company_name, interview_type):
         """
         persona_info: Dict containing company, role, and interview style.
         user_resume: String containing the text of the user's resume.
         interview_type: 
         """
-        self.persona_info = persona_info
-        self.user_resume = user_resume
-        
-        # Fetch the prompts from firebase (System instruction)
-        
-        # 1. Define the System Instruction (The Persona)
-        system_instruction = (
-            f"You are an expert interviewer at {persona_info['company']}. "
-            f"You are conducting a {persona_info['type']} for the {persona_info['role']} position. "
-            f"Company Interview Style: {persona_info['style_guide']}\n\n"
-            "YOUR GOAL: Be adaptive. Do not follow a script. "
-            "1. Analyze the candidate's responses for technical gaps or 'weak points.'\n"
-            "2. If a user is vague, press them for details.\n"
-            "3. Refer to their resume (provided below) to verify claims or ask about specific projects.\n"
-            "4. Keep track of 'Private Feedback' internally to guide your next question.\n\n"
-            f"CANDIDATE RESUME:\n{self.user_resume}"
-        )
+        # company_name = 'google'
+        # interview_type = 'behavorial'
+        # user_email = 'liamm24@vt.edu'
+        # Configuration for the Gemini API
+        self.client = genai.Client(os.getenv("GEMINI_API_KEY"))
+        print('Got gemini running')
 
-        # 2. Initialize the model with the System Instruction
-        self.model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash", # or gemini-1.5-pro for deeper reasoning
-            system_instruction=system_instruction
-        )
         
-        # 3. Start a stateful chat session
-        self.chat_session = self.model.start_chat(history=[])
+        self.current_session_reports = []
+        
+        persona_prompt, additional_info = get_persona_data(company_name, interview_type)
+        user_data = get_user_info(user_email)
+        print(user_data)
+        self.personal_info = user_data['personal_info']
+        self.user_resume = self.personal_info['resume']
+        
+        print(f"This is your resume\n{self.user_resume}")
+                
+        # 1. Define the System Instruction (The Persona)
+        formatted_topics = additional_info.replace('|', '\n- ')
+    # Current Session (Short-term)
+        current_session_report = self.current_session_reports[-1] if self.current_session_reports else "No previous rounds yet. This is the start of the interview."
+        system_instruction = (
+    f"### IDENTITY AND GOALS ###\n"
+    f"{persona_prompt}\n\n"
+    
+    f"### SESSION PROGRESSION (PREVIOUS MINI-REPORT) ###\n"
+    f"Use these to maintain consistency, track what has already been asked, and avoid repetition:\n"
+    f"{current_session_report}\n\n"
+
+    f"### INTERVIEW TOPIC POOL ###\n"
+    f"Use these as your primary areas of inquiry, but pivot based on the resume and user answers:\n"
+    f"{formatted_topics}\n\n"
+    
+    f"### CANDIDATE CONTEXT (RESUME) ###\n"
+    f"{self.user_resume}\n\n"
+    
+    f"### OPERATIONAL RULES ###\n"
+    "1. START: If this is Round 1, introduce yourself as a Google engineer. If not, acknowledge the previous point and pivot.\n"
+    "2. PROBING: If they miss a 'Result' (the R in STAR), you MUST ask for metrics, data, or the final impact.\n"
+    "3. ADAPTIVE FLOW: Use the 'SESSION PROGRESSION' to build on previous answers. If they mentioned a struggle in Round 1, you can probe their resilience in Round 2.\n"
+    "4. TRANSITIONS: Use natural bridges like 'Building on that...' or 'Moving to a different area...'.\n"
+    "5. NO FEEDBACK: Maintain a neutral, professional demeanor. Do not say 'Great' or 'Correct'.\n"
+    "6. DYNAMICS: If they use 'I' too much, ask how their team contributed or reacted."
+)
+    # 2. Initialize the model with the System Instruction. Creates the chat
+        self.chat_session = self.client.chats.create(
+    model="gemini-1.5-flash",
+    config=types.GenerateContentConfig(
+        system_instruction=system_instruction
+    )
+)
+    
 
     def get_next_question(self, user_transcript):
         """
-        Processes the transcribed text from audio_analysis.py 
-        and returns the next adaptive question.
+        Forces Gemini to analyze the transcript for weaknesses/strengths 
+        and then generate the next question based on that analysis.
         """
-        
-        # We use a specific prompt to ensure it generates both feedback and the question
         prompt = (
-            f"The candidate said: '{user_transcript}'\n\n"
-            "Tasks:\n"
-            "- Internal Thought: Analyze their answer for weaknesses or strengths.\n"
-            "- Output: Ask the next relevant follow-up question to probe their depth."
+            f"USER RESPONSE: '{user_transcript}'\n\n"
+            "TASKS:\n"
+            "1. Analyze the response for STAR method gaps and strengths.\n"
+            "2. Generate a 2-3 sentence internal feedback summary.\n"
+            "3. Ask the next relevant follow-up or pivot to a new topic."
         )
 
-        # Send the transcript to the API
         response = self.chat_session.send_message(prompt)
-        
         return response.text
-    
 # --- Example Usage ---
 
 # Persona data needs to be fetched from firebase. the "persona prompt" and "additional info"
@@ -83,7 +103,7 @@ resume_text = "Experienced in C and Python. Built a web scraper and won VTHacks 
 interview_type = "Behavioral"
 
 # Initialize the session
-interview = InterviewManager(persona_data, resume_text, interview_type) 
+interview = InterviewManager('liamm24@vt.edu', 'google', 'behavioral') 
 
 
 # Example flow:

@@ -1,0 +1,276 @@
+/* --- Main Container --- */
+.tech-container {
+    height: 100vh;
+    width: 100vw;
+    /* IMPORTANT: Transparent so the ColorBends background shows */
+    background: transparent; 
+    color: #e0e0e0;
+    position: relative;
+    overflow: hidden;
+}
+
+/* --- UI Layer --- */
+.tech-ui-layer {
+    position: relative;
+    z-index: 10; /* Sits above the background */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+/* --- Glass Panels (The "Textured" Look) --- */
+/* We apply this class to the Header, Panels, and Camera */
+.glass-panel {
+    /* Semi-transparent dark blue/gray */
+    background: rgba(18, 18, 24, 0.65); 
+    /* The Blur Effect */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    /* Subtle border */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* --- Header --- */
+.tech-header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    /* Ensure no solid background here either */
+    background: rgba(18, 18, 24, 0.6);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.exit-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #cbd5e1;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+.exit-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+.interview-meta {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.run-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+.run-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+.submit-btn {
+    background: linear-gradient(135deg, #2da44e 0%, #238636 100%);
+    color: white;
+    border: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(45, 164, 78, 0.4);
+}
+
+/* --- Workspace Area --- */
+.tech-workspace {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    padding: 1rem;
+    gap: 1rem;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+    overflow: hidden;
+    /* Remove any solid background specific to panels */
+    background: transparent; 
+}
+
+.left-panel { 
+    width: 40%; 
+    overflow-y: auto; 
+    /* Force glass background */
+    background: rgba(18, 18, 24, 0.65);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.right-panel { 
+    width: 60%; 
+    /* Force glass background */
+    background: rgba(18, 18, 24, 0.65);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panel-header {
+    padding: 0.8rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.03); /* Subtle highlight */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.panel-header.small {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+}
+
+/* --- Problem Description Content --- */
+.problem-content {
+    padding: 1.5rem;
+    line-height: 1.6;
+    color: #e2e8f0;
+}
+
+.problem-content h2 { margin-top: 0; font-size: 1.5rem; color: white; }
+.problem-content code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.9em;
+}
+
+.difficulty-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+.difficulty-tag.easy { color: #4ade80; background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.2); }
+.difficulty-tag.medium { color: #facc15; background: rgba(250, 204, 21, 0.15); border: 1px solid rgba(250, 204, 21, 0.2); }
+.difficulty-tag.hard { color: #f87171; background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.2); }
+
+.example-box {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* --- Editor Area --- */
+.editor-header {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lang-select {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    outline: none;
+}
+
+.code-area-wrapper {
+    flex: 1;
+    position: relative;
+    background: transparent; /* No solid color here */
+}
+
+.code-editor {
+    width: 100%;
+    height: 100%;
+    /* Transparent so panel glass shows through */
+    background: transparent; 
+    color: #d4d4d4;
+    border: none;
+    padding: 1rem;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+}
+
+/* --- Console Area --- */
+.console-area {
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    /* Semi-transparent dark overlay */
+    background: rgba(0, 0, 0, 0.2); 
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.console-output {
+    flex: 1;
+    padding: 1rem;
+    margin: 0;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #9cdcfe;
+    overflow-y: auto;
+}
+
+/* --- Floating Camera --- */
+.floating-camera {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    width: 220px;
+    height: 165px;
+    background: black; /* Camera box itself can be black */
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    z-index: 100;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.floating-camera video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    opacity: 0.9;
+}
+
+.cam-label {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-size: 0.75rem;
+    background: rgba(0,0,0,0.7);
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: white;
+    backdrop-filter: blur(4px);
+}
