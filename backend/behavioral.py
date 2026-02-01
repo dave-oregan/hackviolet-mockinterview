@@ -182,32 +182,32 @@ class MockInterviewCore:
 # import os
 # from firebase import get_persona_data, get_user_info
 
-# # Configure your API Key
-# genai.configure(api_key="AIzaSyD_3ZqPlweHfBMtB_woGdMO1T4oY0zc00k")
+# Configure your API Key
+genai.configure(api_key="AIzaSyD_3ZqPlweHfBMtB_woGdMO1T4oY0zc00k")
 
-# class MockInterviewCore:
-#     def __init__(self, user_email, company_name, interview_level, interview_type):
-#         self.company_name = company_name
-#         self.interview_level = interview_level
-#         self.interview_type = interview_type
-#         self.mini_report = []
-#         # 1. Fetch data from your Firebase functions
-#         # Note: Ensure get_persona_data in firebase.py returns the data!
-#         persona_prompt, _ = get_persona_data(company_name, interview_type)
-#         user_data = get_user_info(user_email)
-#         self.personal_info = user_data['personal_info']
-#         self.user_resume = self.personal_info['resume']
+class MockInterviewCore:
+    def __init__(self, user_email, company_name, interview_level, interview_type):
+        self.company_name = company_name
+        self.interview_level = interview_level
+        self.interview_type = interview_type
+        self.mini_report = []
+        # 1. Fetch data from your Firebase functions
+        # Note: Ensure get_persona_data in firebase.py returns the data!
+        persona_prompt, _ = get_persona_data(company_name, interview_type)
+        user_data = get_user_info(user_email)
+        self.personal_info = user_data['personal_info']
+        self.user_resume = self.personal_info['resume']
         
-#         # 2. Setup Gemini 3 Models
-#         self.interviewer_model = genai.GenerativeModel(
-#             model_name='gemini-3-pro-preview', # The adaptive strategist
-#             system_instruction=self._build_system_prompt(persona_prompt)
-#         )
-#         self.feedback_model = genai.GenerativeModel(
-#             model_name='gemini-3-flash-preview' # The tactical evaluator
-#         )
+        # 2. Setup Gemini 3 Models
+        self.interviewer_model = genai.GenerativeModel(
+            model_name='gemini-3-pro-preview', # The adaptive strategist
+            system_instruction=self._build_system_prompt(persona_prompt)
+        )
+        self.feedback_model = genai.GenerativeModel(
+            model_name='gemini-3-flash-preview' # The tactical evaluator
+        )
         
-#         self.chat_session = self.interviewer_model.start_chat(history=[])
+        self.chat_session = self.interviewer_model.start_chat(history=[])
 
 #     def _build_system_prompt(self, persona_prompt):
 #         return f"""

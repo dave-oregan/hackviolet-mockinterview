@@ -1,50 +1,83 @@
-// Mock authentication functions
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { auth, FIREBASE_DB } from "../firebase";
 
 export const loginUser = async (email, password) => {
-  // Mock credentials
-  const validEmail = 'test@intervue.com';
-  const validPassword = 'testpass';
+  try {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    
+    const uid = userCredential.user.uid;
 
-  // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
+    const userdoc = await getDoc(doc(FIREBASE_DB, "accounts", uid));
+    const userData = userdoc.data();
 
-  if (email === validEmail && password === validPassword) {
-    // Mock user object
-    const user = {
-      id: 1,
-      email: email,
-      name: 'Test User',
-    };
-    // Store user in localStorage for persistence
-    localStorage.setItem('user', JSON.stringify(user));
-    return { success: true, user };
-  } else {
-    return { success: false, error: 'Invalid email or password' };
+    localStorage.setItem("name", userData.fullName);
+    localStorage.setItem("uid", uid)
+
+    console.log(localStorage.getItem(userData.fullName))
+    console.log(localStorage.getItem("uid"))
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
   }
 };
 
 export const signupUser = async (name, email, password) => {
-  // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  try {
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-  // Mock signup - in real app would validate and create user in database
-  const user = {
-    id: Math.random(), // Mock ID
-    email: email,
-    name: name,
-  };
+    const user = userCredential.user;
 
-  // Store user in localStorage for persistence
-  localStorage.setItem('user', JSON.stringify(user));
-  return { success: true, user };
+    localStorage.setItem("uid", user.uid);
+    localStorage.setItem("email", email);
+    localStorage.setItem("name", name);
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 };
 
-export const logoutUser = () => {
-  localStorage.removeItem('user');
-  return { success: true };
+export const submitSurvey = async (formData) => {
+  const uid = localStorage.getItem("uid");
+
+  const defaultUserData = {
+    fullName: localStorage.getItem("name"),
+    emailAdd: localStorage.getItem("email"),
+    age: formData.age,
+    gender: formData.gender,
+    school: formData.school,
+    major: formData.major,
+    companies: formData.companies || [],
+    resume: null,
+    updatedAt: new Date()
+  };
+
+  await setDoc(
+    doc(FIREBASE_DB, "accounts", uid),
+    defaultUserData,
+    { merge: true }
+  );
+};
+
+export const logoutUser = async () => {
+  await signOut(auth);
+  localStorage.removeItem("token");
 };
 
 export const getCurrentUser = () => {
-  const user = localStorage.getItem('user');
-  return user ? JSON.parse(user) : null;
+  return auth.currentUser;
 };

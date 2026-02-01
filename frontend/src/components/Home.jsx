@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, logoutUser } from '../functions/login';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebase';
+import { logoutUser } from '../functions/login';
 import { AnimatePresence } from 'framer-motion';
 
 // Components
@@ -19,154 +21,170 @@ import ArchiveIcon from '../svg/archive';
 import '../css/Home.css';
 
 function Home() {
-    const navigate = useNavigate();
-    const user = getCurrentUser();
-    
-    // State for the company selection overlay
-    const [showCompanySelect, setShowCompanySelect] = useState(false);
-    
-    // Legacy modal state (can be kept for other features or removed if unused)
-    const [openModal, setOpenModal] = useState(false); 
+  const navigate = useNavigate();
 
-    const handleLogout = () => {
-        logoutUser();
-        navigate('/');
-    };
+  // 🔐 Auth state
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
-    // Triggered when clicking "New Interview"
-    const handleJoin = () => {
-        setShowCompanySelect(true);
-    };
+  // UI state
+  const [showCompanySelect, setShowCompanySelect] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
-    // Triggered when the user finishes the Company -> Type -> Difficulty flow
-    const handleCompanySelected = (finalData) => {
-        console.log("Selection Complete:", finalData);
-        
-        setShowCompanySelect(false);
+  // 🔐 Listen for Firebase Auth changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          uid: localStorage.getItem('uid'),
+          email: firebaseUser.email,
+          name: localStorage.getItem('name'), // replace with Firestore later
+        });
+      } else {
+        setUser(null);
+      }
+      setAuthLoading(false);
+    });
 
-        // Navigate based on the selected Interview Type
-        if (finalData.type === 'Behavioral') {
-            navigate('/interview-behavioral', { 
-                state: { 
-                    company: finalData.company,
-                    difficulty: finalData.difficulty 
-                } 
-            });
-        } else if (finalData.type === 'Technical') {
-            navigate('/interview/technical', { 
-                state: { 
-                    company: finalData.company,
-                    difficulty: finalData.difficulty 
-                } 
-            });
-        } else if (finalData.type === 'Technical') {
-            navigate('/interview/technical', { 
-                state: { 
-                    company: finalData.company,
-                    difficulty: finalData.difficulty 
-                } 
-            });
-        } else {
-            console.warn("Unknown interview type selected");
-        }
-    };
+    return () => unsubscribe();
+  }, []);
 
-    const handleClose = () => {
-        setOpenModal(false);
-        setShowCompanySelect(false);
-    };
+  // 🔒 Protect route AFTER auth finishes loading
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login');
+    }
+  }, [authLoading, user, navigate]);
 
-    const handleSelect = (mode) => {
-        console.log('Selected mode:', mode);
-    };
+  // 🚪 Logout
+  const handleLogout = () => {
+    logoutUser();
+    navigate('/');
+  };
 
-    // Protect Route
-    useEffect(() => {
-        if (!user) {
-            navigate('/login');
-        }
-    }, [user, navigate]);
+  // 🧩 Interview flow
+  const handleJoin = () => {
+    setShowCompanySelect(true);
+  };
 
-    if (!user) return null;
+  const handleCompanySelected = (finalData) => {
+    setShowCompanySelect(false);
 
-    // Menu Items
-    const items = [
-        { 
-            icon: <TelOut />, 
-            color: 'blue', 
-            label: 'New Interview', 
-            click: handleJoin 
-        },
-        { 
-            icon: <Graph />, 
-            color: 'purple', 
-            label: 'Progress', 
-            click: () => navigate('/progress') 
-        },
-        { 
-            icon: <ArchiveIcon />, 
-            color: 'indigo', 
-            label: 'Archive', 
-            click: () => navigate('/archive') 
-        },
-    ];
+    if (finalData.type === 'Behavioral') {
+      navigate('/interview-behavioral', { 
+        state: { 
+          company: finalData.company,
+          difficulty: finalData.difficulty 
+        } 
+      });
+    } else if (finalData.type === 'Technical') {
+      navigate('/interview/technical', { 
+        state: { 
+          company: finalData.company,
+          difficulty: finalData.difficulty 
+        } 
+      });
+    } else {
+      console.warn('Unknown interview type selected');
+    }
+  };
 
-    return (
-        <FadeContent blur={true} duration={0.8}>
-            <div className="home-container">
-                {/* 1. Background Layer */}
-                <LightPillar 
-                    topColor="#5227FF" 
-                    bottomColor="#FF9FFC" 
-                    intensity={1} 
-                    rotationSpeed={0.3} 
-                    glowAmount={0.002} 
-                    pillarWidth={3} 
-                    pillarHeight={0.4} 
-                    noiseIntensity={0.5} 
-                    pillarRotation={25} 
-                    interactive={false} 
-                    mixBlendMode="screen" 
-                    quality="high"
-                />
+  const handleClose = () => {
+    setOpenModal(false);
+    setShowCompanySelect(false);
+  };
 
-                {/* 2. Content Layer - Header */}
-                <header className="home-header">
-                    <h1 className="home-logo">Intervue</h1>
-                    <button className="logout-button" onClick={handleLogout}>
-                        Log out
-                    </button>
-                </header>
+  const handleSelect = (mode) => {
+    console.log('Selected mode:', mode);
+  };
 
-                {/* 3. Content Layer - Main */}
-                <main className="home-main">
-                    <div className="welcome-top">
-                        <h2 className="welcome-text">Welcome, {user.name}</h2>
-                    </div>
+  // ⏳ Prevent render flicker
+  if (authLoading) return null;
+  if (!user) return null;
 
-                    <div className="glass-container" style={{ width: '100vw' }}>
-                        <GlassIcons items={items} className="custom-class" colorful={false} />
-                    </div>
+  // Menu Items
+  const items = [
+    { 
+      icon: <TelOut />, 
+      color: 'blue', 
+      label: 'New Interview', 
+      click: handleJoin 
+    },
+    { 
+      icon: <Graph />, 
+      color: 'purple', 
+      label: 'Progress', 
+      click: () => navigate('/progress') 
+    },
+    { 
+      icon: <ArchiveIcon />, 
+      color: 'indigo', 
+      label: 'Archive', 
+      click: () => navigate('/archive') 
+    },
+  ];
 
-                    {/* Spacer for visual balance */}
-                    <div className="spacer" style={{ height: '15vh' }}></div>
-                </main>
+  return (
+    <FadeContent blur={true} duration={0.8}>
+      <div className="home-container">
 
-                {/* 4. Overlays */}
-                <AnimatePresence>
-                    {showCompanySelect && (
-                        <CompanySelection 
-                            onClose={() => setShowCompanySelect(false)} 
-                            onSelect={handleCompanySelected} 
-                        />
-                    )}
-                </AnimatePresence>
+        {/* Background */}
+        <LightPillar 
+          topColor="#5227FF" 
+          bottomColor="#FF9FFC" 
+          intensity={1} 
+          rotationSpeed={0.3} 
+          glowAmount={0.002} 
+          pillarWidth={3} 
+          pillarHeight={0.4} 
+          noiseIntensity={0.5} 
+          pillarRotation={25} 
+          interactive={false} 
+          mixBlendMode="screen" 
+          quality="high"
+        />
 
-                {/* Legacy Modal (Hidden unless openModal is used) */}
-                <SelectMode open={openModal} onClose={handleClose} onSelect={handleSelect} />
-            </div>
-        </FadeContent>
-    );
+        {/* Header */}
+        <header className="home-header">
+          <h1 className="home-logo">Intervue</h1>
+          <button className="logout-button" onClick={handleLogout}>
+            Log out
+          </button>
+        </header>
+
+        {/* Main */}
+        <main className="home-main">
+          <div className="welcome-top">
+            <h2 className="welcome-text">Welcome, {user.name}</h2>
+          </div>
+
+          <div className="glass-container" style={{ width: '100vw' }}>
+            <GlassIcons items={items} colorful={false} />
+          </div>
+
+          <div className="spacer" style={{ height: '15vh' }} />
+        </main>
+
+        {/* Overlays */}
+        <AnimatePresence>
+          {showCompanySelect && (
+            <CompanySelection 
+              onClose={() => setShowCompanySelect(false)} 
+              onSelect={handleCompanySelected} 
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Legacy Modal */}
+        <SelectMode 
+          open={openModal} 
+          onClose={handleClose} 
+          onSelect={handleSelect} 
+        />
+
+      </div>
+    </FadeContent>
+  );
 }
 
 export default Home;

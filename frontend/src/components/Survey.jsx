@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import FadeContent from './FadeContent';
+import { submitSurvey } from '../functions/login';
 import '../css/Survey.css'; 
 
 const COMPANIES = ['Meta', 'Apple', 'Amazon', 'Netflix', 'Google'];
@@ -49,7 +50,9 @@ const Survey = () => {
     // dataToSend.append('resume', formData.resume);
     // dataToSend.append('age', formData.age); ...etc
     
-    console.log("Submitting Survey Data:", formData);
+    // console.log("Submitting Survey Data:", formData);
+
+    submitSurvey(formData)
 
     // Simulate network delay then redirect home
     setTimeout(() => {
