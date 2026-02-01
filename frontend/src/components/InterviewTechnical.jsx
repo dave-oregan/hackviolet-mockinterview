@@ -15,6 +15,16 @@ function InterviewTechnical() {
 
   const videoRef = useRef(null);
 
+  /* -------------------------
+     Audio Recording Refs
+  ------------------------- */
+  const streamRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  /* -------------------------
+     State
+  ------------------------- */
   const [code, setCode] = useState(`// Write your solution here
 
 function solution(nums, target) {
@@ -27,11 +37,9 @@ function solution(nums, target) {
   const [isLoading, setIsLoading] = useState(false);
   const [isInterviewStarted, setIsInterviewStarted] = useState(false);
 
-  const toggleRecording = () => {
-    if (isLoading) return;
-    setIsRecording((prev) => !prev);
-  };
-
+  /* -------------------------
+     Camera (Video Only)
+  ------------------------- */
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: false })
@@ -41,6 +49,102 @@ function solution(nums, target) {
       .catch(() => {});
   }, []);
 
+  /* -------------------------
+     Recording Logic
+  ------------------------- */
+  const startRecording = async () => {
+    if (isRecording || isLoading) return;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      audioChunksRef.current = [];
+
+      const recorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm',
+      });
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: 'audio/webm',
+        });
+        handleAudioSubmit(audioBlob);
+      };
+
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+      setIsRecording(true);
+    } catch (err) {
+      console.error(err);
+      alert('Microphone access failed.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (!mediaRecorderRef.current) return;
+
+    mediaRecorderRef.current.stop();
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+
+    setIsRecording(false);
+  };
+
+  const toggleRecording = () => {
+    if (isLoading) return;
+    isRecording ? stopRecording() : startRecording();
+  };
+
+  /* -------------------------
+     Backend Audio Submit
+  ------------------------- */
+  const handleAudioSubmit = async (audioBlob) => {
+    setIsLoading(true);
+
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'input.webm');
+    formData.append('context', 'technical-interview');
+
+    try {
+      const response = await fetch(
+        'http://localhost:5001/api/process-audio',
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.user_transcription) {
+        console.log('User transcription:', data.user_transcription);
+      }
+
+      if (data.reply || data.ai_response) {
+        console.log('AI reply:', data.reply || data.ai_response);
+      }
+
+      if (data.audio) {
+        const audio = new Audio(
+          `data:audio/mpeg;base64,${data.audio}`
+        );
+        audio.play();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /* -------------------------
+     Code Runner
+  ------------------------- */
   const handleRun = () => {
     if (language !== 'JavaScript') {
       setOutput('❌ Only JavaScript is supported.');
@@ -52,10 +156,16 @@ function solution(nums, target) {
     const originalError = console.error;
 
     console.log = (...args) =>
-      logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+      logs.push(
+        args
+          .map((a) =>
+            typeof a === 'object' ? JSON.stringify(a) : String(a)
+          )
+          .join(' ')
+      );
 
     console.error = (...args) =>
-      logs.push('❌ ' + args.map(a => String(a)).join(' '));
+      logs.push('❌ ' + args.map((a) => String(a)).join(' '));
 
     try {
       const fn = new Function(`
@@ -65,7 +175,7 @@ function solution(nums, target) {
 
       const solutionFn = fn();
       if (typeof solutionFn === 'function') {
-        solutionFn([2,7,11,15], 9);
+        solutionFn([2, 7, 11, 15], 9);
       } else {
         logs.push('⚠️ solution() not found');
       }
@@ -79,6 +189,9 @@ function solution(nums, target) {
     setOutput(logs.join('\n'));
   };
 
+  /* -------------------------
+     UI
+  ------------------------- */
   return (
     <div className="tech-container leetcode-theme">
       {/* Header */}
@@ -99,7 +212,7 @@ function solution(nums, target) {
 
       {/* Workspace */}
       <div className="tech-workspace">
-        {/* LEFT: Problem */}
+        {/* LEFT */}
         <div className="panel left-panel">
           <div className="tabs">
             <span className="active">Description</span>
@@ -128,7 +241,7 @@ Output: [0,1]
           </div>
         </div>
 
-        {/* RIGHT: Editor + Bottom Section */}
+        {/* RIGHT */}
         <div className="panel right-panel">
           <div className="editor-header">
             <select
@@ -150,10 +263,7 @@ Output: [0,1]
             spellCheck="false"
           />
 
-          {/* Bottom Split Area */}
           <div className="bottom-row">
-
-            {/* Testcases */}
             <div className="testcase-panel">
               <div className="panel-header small">Testcases</div>
               <pre className="testcase-content">
@@ -167,7 +277,6 @@ Expected Output:
             </div>
           </div>
 
-          {/* Console */}
           <div className="console-area">
             <div className="panel-header small">Testcase Output</div>
             <pre className="console-output">
@@ -182,13 +291,15 @@ Expected Output:
         <video ref={videoRef} autoPlay playsInline muted />
         <div className="cam-label">You</div>
       </div>
+
+      {/* Mic Button */}
       <button
-  className={`floating-mic ${isRecording ? 'active' : ''}`}
-                onClick={toggleRecording}
-                disabled={isLoading}
->
-  {isRecording ? <Micw /> : <Mic />}
-</button>
+        className={`floating-mic ${isRecording ? 'active' : ''}`}
+        onClick={toggleRecording}
+        disabled={isLoading}
+      >
+        {isRecording ? <Micw /> : <Mic />}
+      </button>
     </div>
   );
 }
