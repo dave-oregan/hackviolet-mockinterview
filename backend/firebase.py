@@ -79,39 +79,8 @@ def get_persona_data(company_name, interview_type):
         additional_info = (data[interview_type]['additional_info'])
         return persona_prompt, additional_info
 
-def get_user_info(user_email):
-    data = db.collection("accounts").document(user_email).get().to_dict() 
+def get_user_info(uuid):
+    uuid = 'an649NxxwZPpTe2AOSX7n9H1keB2'
+    data = db.collection("accounts").document(uuid).get().to_dict() 
+    print(data)
     return data
-    
-if __name__ == "__main__":
-    #add_user('Liam', 'liamm24@vt.edu', '123','Virginia Tech','Data Science', '20', [])
-    
-    test_report = {
-        "score":"80",
-        "feedback":"Great communication and movement of hands"
-    }
-    add_interview('liamm24@vt.edu', 'Google', 'Software Engineer', '3', test_report)
-    print('success to add interview')
-    get_persona_data('google', 'behavioral')
-    
-    get_user_info('liamm24@vt.edu')
-    
-    
-
-import firebase_admin  # <--- ADD THIS LINE
-from firebase_admin import credentials, firestore, initialize_app
-from dotenv import load_dotenv
-
-load_dotenv()
-
-# This checks if the app is already initialized
-if not firebase_admin._apps:
-    cred = credentials.Certificate({
-        "project_id": os.getenv("FB_PROJECT_ID"),
-        "client_email": os.getenv("FB_CLIENT_EMAIL"),
-        "private_key": os.getenv("FB_PRIVATE_KEY").replace('\\n', '\n'),
-        "type": "service_account",
-    })
-    initialize_app(cred)
-
-db = firestore.client()
